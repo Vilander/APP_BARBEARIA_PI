@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block body %}
+<head>
+    <title>Página do Barbeiro</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #343a40;
+            font-family: 'Arial', sans-serif;
+        }
+        .jumbotron {
+            background-color: #212529;
+            color: white;
+            border-radius: 15px;
+            padding: 2rem;
+        }
+        footer {
+            background-color: #222;
+            color: #f8f9fa;
+            padding: 1.5rem 0;
+        }
+        .text-muted {
+            font-size: 1.0rem;
+            color: #ced4da;
+        }
+        h1 {
+            font-family: 'Brush Script MT', cursive;
+            font-weight: normal;
+            font-size: 6.0rem;
+        }
+        p {
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .jumbotron {
+                padding: 1rem;
+            }
+            h1 {
+                font-size: 3.0rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="jumbotron text-center">
+            <h1>O portal da sua Barbearia</h1>
+            <hr>
+            <img src="static/barbearia.jpg" class="img-fluid rounded" alt="Imagem do Barbeiro">
+            <hr class="my-4">
+            <p>CorteFácil Barber Shop App</p>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</body>
+{% endblock %}

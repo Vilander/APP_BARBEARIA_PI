@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <style>
+        body {
+            background-color: #343a40 !important;
+            color: white !important;
+        }
+        .container {
+            background-color: #212529 !important;
+            border-radius: 15px;
+            padding: 2rem;
+        }
+        .form-control {
+            background-color: ##3c4247 !important;
+            color: white !important;
+            border: 1px solid #ced4da !important;
+        }
+        .form-control-label {
+            color: white !important;
+        }
+        .btn-dark {
+            background-color: #212529 !important;
+            border-color: #ced4da !important;
+            color: white !important;
+        }
+        .btn-dark:hover {
+            background-color: #343a40 !important;
+        }
+        .invalid-feedback {
+            color: #e74c3c !important;
+        }
+        .border {
+            border: 1px solid #ced4da !important;
+        }
+        hr {
+            border-top: 1px solid #ced4da !important;
+        }
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+    </style>
+</head>
+{% block body %}
+<body style="background-color: #343a40 !important; color: white !important;">
+    <div class="container">
+        <h2>Faça Seu Agendamento aqui</h2>
+        <hr>
+        <div class="row">
+            <div class="col">
+                <form method="POST" action="" class="p-4 mt-2">
+                    {{ form_agendar.csrf_token }}
+                    <legend>Agendar</legend>
+                    <fieldset>
+                        <div class="form-group">
+                            {{ form_agendar.username.label(class="form-control-label") }}
+                            {% if form_agendar.username.errors %}
+                                {{ form_agendar.username(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for erro in form_agendar.username.errors %}
+                                        {{ erro }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form_agendar.username(class="form-control") }}
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form_agendar.cell.label(class="form-control-label") }}
+                            {% if form_agendar.cell.errors %}
+                                {{ form_agendar.cell(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for erro in form_agendar.cell.errors %}
+                                        {{ erro }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form_agendar.cell(class="form-control") }}
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form_agendar.servico.label(class="form-control-label") }}
+                            {% if form_agendar.servico.errors %}
+                                {{ form_agendar.servico(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for erro in form_agendar.servico.errors %}
+                                        {{ erro }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form_agendar.servico(class="form-control") }}
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form_agendar.datar.label(class="form-control-label") }}
+                            {% if form_agendar.datar.errors %}
+                                {{ form_agendar.datar(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for erro in form_agendar.datar.errors %}
+                                        {{ erro }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form_agendar.datar(class="form-control") }}
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            {{ form_agendar.hora.label(class="form-control-label") }}
+                            {% if form_agendar.hora.errors %}
+                                {{ form_agendar.hora(class="form-control is-invalid") }}
+                                <div class="invalid-feedback">
+                                    {% for erro in form_agendar.hora.errors %}
+                                        {{ erro }}
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                {{ form_agendar.hora(class="form-control") }}
+                            {% endif %}
+                        </div>
+                    </fieldset>
+                    <div class="button-row">
+                        {{ form_agendar.botao_submit_agendar(class="btn btn-dark mt-2") }}
+                        <a href="{{ url_for('agenda_data') }}" class="btn btn-dark mt-2">Verifique a Agenda</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script>
+        $.ajaxSetup({
+            beforeSend: function(xhr, settings) {
+                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && não for crossDomain) {
+                    var csrf_token = $('[name=csrf_token_value]').attr('content');
+                    xhr.setRequestHeader("X-CSRFToken", csrf_token);
+                }
+            }
+        });
+        </script>
+    </div>
+</body>
+{% endblock %}
+

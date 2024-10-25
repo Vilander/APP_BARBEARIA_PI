@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block body %}
+    <style>
+        body {
+            background-color: #343a40;
+            font-family: 'Arial', sans-serif;
+        }
+        .card {
+            background-color: #212529;
+            border: 1px solid #ced4da;
+            color: white;
+         	max-width: 500px; /* Aumenta a largura máxima da caixa */
+            width: 100%; /* Faz com que a caixa ocupe 100% do espaço disponível */
+        }
+
+        h4, span {
+            color: #f8f9fa;
+        }
+        .stats {
+            background-color: #495057;
+        }
+        .stats .articles, .stats .rating {
+            color: #ced4da;
+        }
+        .button .btn {
+            background-color: #212529;
+            border-color: #ced4da;
+            color: white;
+        }
+        .button .btn:hover {
+            background-color: #343a40;
+            color: white;
+        }
+    </style>
+    <div class="container mt-5 d-flex justify-content-center">
+        <div class="card p-3">
+            <div class="d-flex align-items-center">
+                <div class="image pe-4"> <img src="{{ foto_perfil }}" class="rounded" width="150"> </div>
+                <div class="ml-2 w-100">
+                    <h4 class="mb-0 mt-0">{{ current_user.username }}</h4> <span>{{ current_user.email }}</span>
+                    <br>
+                    <div class="p-2 mt-2 bg-dark d-flex justify-content-between rounded text-white stats">
+
+                    </div>
+                    <br>
+                    <div class="button mt-2 d-flex flex-row align-items-center">
+                        <a href="{{ url_for('editar_perfil') }}">
+                            <button class="btn btn-sm btn-outline-dark w-100">Editar Perfil</button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% block editar_perfil %}{% endblock %}
+{% endblock %}
+

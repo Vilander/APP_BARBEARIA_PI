@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block body %}
+
+<style>
+    body {
+        background-color: #343a40 !important;
+        font-family: 'Arial', sans-serif;
+    }
+    .form-group label {
+        color: #ced4da !important;
+    }
+    .form-control {
+        background-color: #495057 !important;
+        color: #fff !important;
+        
+    }
+    .form-control.is-invalid {
+        background-color: #495057 !important;
+        color: #fff !important;
+        
+    }
+    .border {
+        background-color: #212529 !important;
+        color: black !important;
+        
+    }
+    h2 {
+        color: #f8f9fa !important;
+    }
+    li {
+        background-color: #212529 !important;
+        color: #f8f9fa !important;
+        
+    }
+    .btn-dark {
+        background-color: #212529 !important;
+        border-color: #ced4da !important;
+    }
+</style>
+
+<form method="POST" action="" class=" p-4 mt-2">
+    {{ form_botao.csrf_token }}
+    <div class="col container mt-3">
+        <h2>Consulte a agenda</h2>
+<br>
+        <div class="form-group">
+          
+            {{ form_botao.data_pesquisa.label(class="form-control-label") }}
+            {% if form_botao.data_pesquisa.errors %}
+                {{ form_botao.data_pesquisa(class="form-control is-invalid") }}
+                <div class="invalid-feedback">
+                    {% for erro in form_botao.data_pesquisa.errors %}
+                        {{ erro }}
+                    {% endfor %}
+                </div>
+            {% else %}
+                {{ form_botao.data_pesquisa(class="form-control") }}
+            {% endif %}
+        </div>
+        {% if lista_agendamentos_data is not none %}
+            <ul>
+                {% for agendamento in lista_agendamentos_data %}
+                    <li class=" p-4 mt-2">
+                        <p>Usuário: {{ agendamento.username }}</p>
+                        <p>Celular: {{ agendamento.cell }}</p>
+                        <p>Serviço: {{ agendamento.servico }}</p>
+                        <p>Data: {{ agendamento.data }}</p>
+                        <p>Hora: {{ agendamento.hora }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+<br>        
+      <div class="d-flex justify-content-between gap-2">
+    		{{ form_botao.botao_submit_agenda_data(class="btn btn-dark w-50") }}
+   			 <a class="btn btn-dark w-50" href="{{ url_for('agendar') }}">Agende seu Horário</a>
+		</div>
+
+    </div>
+</form>
+
+{% endblock %}
+

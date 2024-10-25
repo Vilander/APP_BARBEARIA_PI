@@ -1,0 +1,33 @@
+.card {
+    width: 400px;
+    border: none;
+    border-radius: 10px;
+    background-color: #212529; /* Cor do fundo escuro para combinar */
+    color: #f8f9fa; /* Texto claro para contraste */
+}
+
+.stats {
+    background: #343a40; /* Cor de fundo mais escura */
+    color: #f8f9fa; /* Texto claro para manter legibilidade */
+}
+
+.articles, .followers, .rating {
+    font-size: 10px;
+    color: #ced4da; /* Cor suave, em tom cinza claro */
+}
+
+.number1, .number2, .number3 {
+    font-weight: 500;
+    color: #f8f9fa; /* Texto claro para destaque */
+}
+
+.form-control {
+    background-color: #363636; /* Fundo escuro */
+    border: 1px solid #495057; /* Borda mais escura */
+    color: #f8f9fa; /* Texto claro */
+}
+
+.form-control:focus {
+    border-color: #6c757d; /* Cor ao focar no campo */
+    box-shadow: none; /* Remover sombra padrão do Bootstrap */
+}
