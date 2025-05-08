@@ -1,152 +1,125 @@
 {% extends 'base.html' %}
-
 {% block body %}
 <head>
     <style>
         body {
-            background-color: #343a40; /* Cor de fundo igual à página Home */
-            font-family: 'Arial', sans-serif;
-        }
-        .container {
-            color: #f8f9fa; /* Cor do texto branco */
-        }
-        .form-group label {
-            color: #ced4da; /* Cor dos rótulos similar à do texto muted na Home */
-        }
-        .form-control {
-            background-color: #212529; /* Fundo dos inputs semelhante ao fundo do jumbotron */
-            color: white; /* Texto branco nos inputs */
-            border-color: #343a40;
-        }
-        .form-control.is-invalid {
-            background-color: #212529;
-            color: white;
-        }
-        .invalid-feedback {
-            color: #f8d7da; /* Feedback de erro em um tom vermelho */
-        }
-        .btn-dark {
-            background-color: #212529; /* Cor do botão semelhante ao jumbotron */
-            border-color: #343a40;
-        }
-        .border {
-            border-color: #212529;
-        }
-        .legend {
+            background: linear-gradient(135deg, #1f1f1f, #2c2c2c);
+            font-family: 'Segoe UI', sans-serif;
             color: #f8f9fa;
         }
-        a {
-            color: #ced4da; /* Cor do link semelhante à do texto muted */
+        .card-login {
+            background-color: #212529;
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            animation: fadeIn 1s ease-in-out;
+        }
+        .form-control {
+            background-color: #2c2c2c;
+            color: white;
+            border: 1px solid #444;
+        }
+        .form-control::placeholder {
+            color: #aaa;
+        }
+        .form-control:focus {
+            border-color: #ffb700;
+            box-shadow: 0 0 5px #ffb700;
+        }
+        .form-group label {
+            color: #ced4da;
+        }
+        .btn-login {
+            background-color: #ffb700;
+            border: none;
+            color: #212529;
+            font-weight: bold;
+            border-radius: 50px;
+            transition: 0.3s;
+        }
+        .btn-login:hover {
+            background-color: #ffd24d;
+            transform: scale(1.05);
+        }
+        .toggle-password {
+            cursor: pointer;
+            color: #bbb;
+            margin-left: -2rem;
+            z-index: 100;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 
-    <div class="container">
-        <h2>Entre ou Cadastre-se</h2>
-        <hr>
-        <div class="row">
-            <div class="col">
-                <form method="POST" action="" class="p-4 mt-2">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card-login">
+                <h3 class="text-center mb-4">Entrar</h3>
+                <form method="POST">
                     {{ form_login.csrf_token }}
-                    <legend>Entrar</legend>
-                    <fieldset>
-                        <div class="form-group">
-                            {{ form_login.email.label(class="form-control-label") }}
-                            {% if form_login.email.errors %}
-                                {{ form_login.email(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_login.email.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_login.email(class="form-control") }}
-                            {% endif %}
+                    <div class="form-group mb-3">
+                        {{ form_login.email.label(class="form-label") }}
+                        {{ form_login.email(class="form-control", placeholder="Seu e-mail") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form_login.senha.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form_login.senha(class="form-control", id="senhaInput", placeholder="Sua senha") }}
+                            <span class="input-group-text toggle-password" onclick="toggleSenha()">👁</span>
                         </div>
-                        <div class="form-group">
-                            {{ form_login.senha.label(class="form-control-label") }}
-                            {% if form_login.senha.errors %}
-                                {{ form_login.senha(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_login.senha.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_login.senha(class="form-control") }}
-                            {% endif %}
-                        </div>
-                        <div class="form-group d-flex align-items-center">
-                            {{ form_login.lembrar_dados(class="form-check-input", style="margin-right: 10px;") }}
-                            {{ form_login.lembrar_dados.label(class="form-check-label") }}
-                            <a href="#" style="margin-left: 100px;">Esqueci minha senha</a>
-                        </div>
-                    </fieldset>
-                    {{ form_login.botao_submit_login(class="btn btn-dark mt-2") }}
+                    </div>
+                    <div class="form-group form-check mb-3">
+                        {{ form_login.lembrar_dados(class="form-check-input") }}
+                        {{ form_login.lembrar_dados.label(class="form-check-label") }}
+                    </div>
+                    {{ form_login.botao_submit_login(class="btn btn-login w-100") }}
                 </form>
             </div>
-            <div class="col">
-                <form method="POST" action="" class="p-4 mt-2">
+        </div>
+        <div class="col-md-5 mt-4 mt-md-0">
+            <div class="card-login">
+                <h3 class="text-center mb-4">Criar Conta</h3>
+                <form method="POST">
                     {{ form_criarconta.csrf_token }}
-                    <legend>Criar Conta</legend>
-                    <fieldset>
-                        <div class="form-group">
-                            {{ form_criarconta.username.label(class="form-control-label") }}
-                            {% if form_criarconta.username.errors %}
-                                {{ form_criarconta.username(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_criarconta.username.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_criarconta.username(class="form-control") }}
-                            {% endif %}
+                    <div class="form-group mb-3">
+                        {{ form_criarconta.username.label(class="form-label") }}
+                        {{ form_criarconta.username(class="form-control", placeholder="Nome de Usuário") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form_criarconta.email.label(class="form-label") }}
+                        {{ form_criarconta.email(class="form-control", placeholder="E-mail") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form_criarconta.senha.label(class="form-label") }}
+                        <div class="input-group">
+                            {{ form_criarconta.senha(class="form-control", id="senhaCriarInput", placeholder="Senha") }}
+                            <span class="input-group-text toggle-password" onclick="toggleSenhaCriar()">👁</span>
                         </div>
-                        <div class="form-group">
-                            {{ form_criarconta.email.label(class="form-control-label") }}
-                            {% if form_criarconta.email.errors %}
-                                {{ form_criarconta.email(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_criarconta.email.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_criarconta.email(class="form-control") }}
-                            {% endif %}
-                        </div>
-                        <div class="form-group">
-                            {{ form_criarconta.senha.label(class="form-control-label") }}
-                            {% if form_criarconta.senha.errors %}
-                                {{ form_criarconta.senha(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_criarconta.senha.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_criarconta.senha(class="form-control") }}
-                            {% endif %}
-                        </div>
-                        <div class="form-group">
-                            {{ form_criarconta.confirmacao_senha.label(class="form-control-label") }}
-                            {% if form_criarconta.confirmacao_senha.errors %}
-                                {{ form_criarconta.confirmacao_senha(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_criarconta.confirmacao_senha.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_criarconta.confirmacao_senha(class="form-control") }}
-                            {% endif %}
-                        </div>
-                    </fieldset>
-                    {{ form_criarconta.botao_submit_criarconta(class="btn btn-dark mt-2") }}
+                    </div>
+                    <div class="form-group mb-3">
+                        {{ form_criarconta.confirmacao_senha.label(class="form-label") }}
+                        {{ form_criarconta.confirmacao_senha(class="form-control", placeholder="Confirme a Senha") }}
+                    </div>
+                    {{ form_criarconta.botao_submit_criarconta(class="btn btn-login w-100") }}
                 </form>
             </div>
         </div>
     </div>
+</div>
+
+<script>
+function toggleSenha() {
+    const input = document.getElementById("senhaInput");
+    input.type = input.type === "password" ? "text" : "password";
+}
+function toggleSenhaCriar() {
+    const input = document.getElementById("senhaCriarInput");
+    input.type = input.type === "password" ? "text" : "password";
+}
+</script>
 {% endblock %}
 

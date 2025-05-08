@@ -1,64 +1,79 @@
-{% extends 'perfil.html' %}
+{% extends 'base.html' %}
+{% block body %}
+<style>
+    body {
+        background: linear-gradient(135deg, #1f1f1f, #2c2c2c);
+        font-family: 'Segoe UI', sans-serif;
+        color: white;
+    }
+    .card-editar-perfil {
+        background-color: #212529;
+        border-radius: 1rem;
+        padding: 2rem;
+        max-width: 600px;
+        margin: auto;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+        animation: fadeIn 1s ease-in-out;
+    }
+    .form-control {
+        background-color: #2c2c2c;
+        color: white;
+        border: 1px solid #444;
+    }
+    .form-control:focus {
+        border-color: #ffb700;
+        box-shadow: 0 0 5px #ffb700;
+    }
+    .btn-salvar {
+        background-color: #ffb700;
+        border: none;
+        color: #212529;
+        font-weight: bold;
+        border-radius: 50px;
+        transition: 0.3s;
+    }
+    .btn-salvar:hover {
+        background-color: #ffd24d;
+        transform: scale(1.05);
+    }
+    .foto-preview {
+        display: block;
+        margin: 0 auto 1rem auto;
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid #ffb700;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
 
-{% block editar_perfil %}
-
- <div class="container">
-        <legend>Edite aqui seus dados</legend>
-        <hr>
-        <div class="row">
-            <div class="col">
-
-                <form method="POST" action="" class="border p-4 mt-2" enctype="multipart/form-data">
-                    {{ form_editar.csrf_token }}
-                    <legend>Criar Conta</legend>
-                    <fieldset>
-                        <div class="form-group">
-                            {{ form_editar.username.label(class="form-control-label") }}
-                            {% if form_editar.username.errors %}
-                                {{ form_editar.username(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_editar.username.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_editar.username(class="form-control") }}
-                            {% endif %}
-                        </div>
-                        <div class="form-group">
-                            {{ form_editar.email.label(class="form-control-label") }}
-                            {% if form_editar.email.errors %}
-                                {{ form_editar.email(class="form-control is-invalid") }}
-                            <div class="invalid-feedback">
-                                {% for erro in form_editar.email.errors %}
-                                    {{ erro }}
-                                {% endfor %}
-                            </div>
-                            {% else %}
-                                {{ form_editar.email(class="form-control") }}
-                            {% endif %}
-                        </div>
-                       
-                        <div class="form-group">
-                            {{ form_editar.foto_perfil.label }}
-                            <br>
-                            {{ form_editar.foto_perfil(class="form-control-file") }}
-                            {% if form_editar.foto_perfil.errors %}
-                                {% for error in form_editar.foto_perfil.errors %}
-                                    <span class="text-danger">{{ error }}</span><br>
-                                {% endfor %}
-                            {% endif %}
-                        </div><hr>
-
-
-                    </fieldset>
-                    {{ form_editar.botao_submit_editarperfil(class="btn btn-dark mt-2") }}
-                </form>
+<div class="container mt-5">
+    <div class="card-editar-perfil">
+        <h3 class="text-center mb-4">Editar Perfil</h3>
+        <img src="{{ foto_perfil }}" alt="Foto de Perfil" class="foto-preview">
+        <form method="POST" enctype="multipart/form-data">
+            {{ form_editar.csrf_token }}
+            <div class="mb-3">
+                {{ form_editar.username.label(class="form-label") }}
+                {{ form_editar.username(class="form-control") }}
             </div>
-            <div class="col">
+            <div class="mb-3">
+                {{ form_editar.email.label(class="form-label") }}
+                {{ form_editar.email(class="form-control") }}
             </div>
-        </div>
+            <div class="mb-3">
+                {{ form_editar.foto_perfil.label(class="form-label") }}
+                {{ form_editar.foto_perfil(class="form-control") }}
+            </div>
+            <div class="text-center">
+                {{ form_editar.botao_submit_editarperfil(class="btn btn-salvar px-5") }}
+            </div>
+        </form>
     </div>
-            
-
+</div>
 {% endblock %}
+

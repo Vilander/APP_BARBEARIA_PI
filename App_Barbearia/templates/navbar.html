@@ -1,36 +1,56 @@
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #212529; width: 100%;">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/" style="font-family: 'Brush Script MT', cursive; font-size: 2.0rem;">
-            <img src="{{ url_for('static', filename='logo-barbearia.jpeg') }}" alt="Logo" style="height: 70px; margin-right: 15px;">
-            CorteFácil
-        </a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Página Inicial</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav ml-auto">
-                {% if current_user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('perfil') }}">Perfil</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('agendar') }}">Agende seu Horário</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('sair') }}">Sair</a>
-                </li>
-                {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{{ url_for('home') }}" style="font-family: 'Brush Script MT', cursive; font-size: 2rem;">
+      <img src="{{ url_for('static', filename='logo-barbearia.jpeg') }}" alt="Logo" style="height: 50px; margin-right: 10px; border-radius: 50%;">
+      CorteFácil
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        {% if current_user.is_authenticated %}
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('agendar') }}">Agendar</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('agenda_data') }}">Consultar Data</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('relatorio') }}">Relatório</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('agenda_hoje') }}">Agenda de Hoje</a>
+        </li>
+        {% endif %}
+      </ul>
+
+      {% if current_user.is_authenticated %}
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="{{ url_for('static', filename='fotos_perfil/' + current_user.foto_perfil) }}" alt="Perfil" class="rounded-circle me-2" width="35" height="35">
+            {{ current_user.username }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
+            <li><a class="dropdown-item" href="{{ url_for('perfil') }}">Ver Perfil</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('editar_perfil') }}">Editar Perfil</a></li>
+            <!-- <li><a class="dropdown-item" href="#">Alterar Senha</a></li> -->
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="{{ url_for('sair') }}">Sair</a></li>
+          </ul>
+        </li>
+      </ul>
+      {% else %}
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('login') }}">Entrar</a>
+        </li>
+      </ul>
+      {% endif %}
     </div>
+  </div>
 </nav>
 

@@ -1,145 +1,123 @@
 {% extends 'base.html' %}
-<head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-    <style>
-        body {
-            background-color: #343a40 !important;
-            color: white !important;
-        }
-        .container {
-            background-color: #212529 !important;
-            border-radius: 15px;
-            padding: 2rem;
-        }
-        .form-control {
-            background-color: ##3c4247 !important;
-            color: white !important;
-            border: 1px solid #ced4da !important;
-        }
-        .form-control-label {
-            color: white !important;
-        }
-        .btn-dark {
-            background-color: #212529 !important;
-            border-color: #ced4da !important;
-            color: white !important;
-        }
-        .btn-dark:hover {
-            background-color: #343a40 !important;
-        }
-        .invalid-feedback {
-            color: #e74c3c !important;
-        }
-        .border {
-            border: 1px solid #ced4da !important;
-        }
-        hr {
-            border-top: 1px solid #ced4da !important;
-        }
-        .button-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-    </style>
-</head>
 {% block body %}
-<body style="background-color: #343a40 !important; color: white !important;">
-    <div class="container">
-        <h2>Faça Seu Agendamento aqui</h2>
-        <hr>
-        <div class="row">
-            <div class="col">
-                <form method="POST" action="" class="p-4 mt-2">
-                    {{ form_agendar.csrf_token }}
-                    <legend>Agendar</legend>
-                    <fieldset>
-                        <div class="form-group">
-                            {{ form_agendar.username.label(class="form-control-label") }}
-                            {% if form_agendar.username.errors %}
-                                {{ form_agendar.username(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for erro in form_agendar.username.errors %}
-                                        {{ erro }}
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form_agendar.username(class="form-control") }}
-                            {% endif %}
-                        </div>
-                        <div class="form-group">
-                            {{ form_agendar.cell.label(class="form-control-label") }}
-                            {% if form_agendar.cell.errors %}
-                                {{ form_agendar.cell(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for erro in form_agendar.cell.errors %}
-                                        {{ erro }}
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form_agendar.cell(class="form-control") }}
-                            {% endif %}
-                        </div>
-                        <div class="form-group">
-                            {{ form_agendar.servico.label(class="form-control-label") }}
-                            {% if form_agendar.servico.errors %}
-                                {{ form_agendar.servico(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for erro in form_agendar.servico.errors %}
-                                        {{ erro }}
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form_agendar.servico(class="form-control") }}
-                            {% endif %}
-                        </div>
-                        <div class="form-group">
-                            {{ form_agendar.datar.label(class="form-control-label") }}
-                            {% if form_agendar.datar.errors %}
-                                {{ form_agendar.datar(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for erro in form_agendar.datar.errors %}
-                                        {{ erro }}
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form_agendar.datar(class="form-control") }}
-                            {% endif %}
-                        </div>
-                        <div class="form-group">
-                            {{ form_agendar.hora.label(class="form-control-label") }}
-                            {% if form_agendar.hora.errors %}
-                                {{ form_agendar.hora(class="form-control is-invalid") }}
-                                <div class="invalid-feedback">
-                                    {% for erro in form_agendar.hora.errors %}
-                                        {{ erro }}
-                                    {% endfor %}
-                                </div>
-                            {% else %}
-                                {{ form_agendar.hora(class="form-control") }}
-                            {% endif %}
-                        </div>
-                    </fieldset>
-                    <div class="button-row">
-                        {{ form_agendar.botao_submit_agendar(class="btn btn-dark mt-2") }}
-                        <a href="{{ url_for('agenda_data') }}" class="btn btn-dark mt-2">Verifique a Agenda</a>
-                    </div>
-                </form>
+<style>
+    body {
+        background: linear-gradient(135deg, #1f1f1f, #2c2c2c);
+        font-family: 'Segoe UI', sans-serif;
+        color: white;
+    }
+    .card-agendar {
+        background-color: #212529;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        animation: fadeIn 1s ease-in-out;
+    }
+    .form-control {
+        background-color: #2c2c2c;
+        color: white;
+        border: 1px solid #444;
+    }
+    .form-control::placeholder {
+        color: #aaa;
+    }
+    .form-control:focus {
+        border-color: #ffb700;
+        box-shadow: 0 0 5px #ffb700;
+    }
+    label {
+        color: #ced4da;
+    }
+    .btn-agendar, .btn-ver-agenda {
+        background-color: #ffb700;
+        border: none;
+        color: #212529;
+        font-weight: bold;
+        border-radius: 50px;
+        transition: 0.3s;
+        width: 100%;
+    }
+    .btn-agendar:hover, .btn-ver-agenda:hover {
+        background-color: #ffd24d;
+        transform: scale(1.03);
+    }
+
+    #loadingOverlay {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .loading-spinner img {
+        width: 100px;
+    }
+</style>
+
+<div class="container mt-5 mb-5">
+    <div class="card-agendar">
+        <h2 class="text-center mb-4">Agende seu Horário</h2>
+        <form method="POST">
+            {{ form_agendar.csrf_token }}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    {{ form_agendar.username.label(class="form-label") }}
+                    {{ form_agendar.username(class="form-control", placeholder="Seu nome") }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_agendar.cell.label(class="form-label") }}
+                    {{ form_agendar.cell(class="form-control", placeholder="DDD + Celular") }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    {{ form_agendar.servico.label(class="form-label") }}
+                    {{ form_agendar.servico(class="form-control") }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form_agendar.datar.label(class="form-label") }}
+                    {{ form_agendar.datar(class="form-control") }}
+                </div>
+                <div class="col-md-3 mb-3">
+                    {{ form_agendar.hora.label(class="form-label") }}
+                    {{ form_agendar.hora(class="form-control") }}
+                </div>
             </div>
-        </div>
-        <script>
-        $.ajaxSetup({
-            beforeSend: function(xhr, settings) {
-                if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && não for crossDomain) {
-                    var csrf_token = $('[name=csrf_token_value]').attr('content');
-                    xhr.setRequestHeader("X-CSRFToken", csrf_token);
-                }
-            }
-        });
-        </script>
+            <div class="row">
+                <div class="col-md-6">
+                    {{ form_agendar.botao_submit_agendar(class="btn btn-agendar mt-3") }}
+                </div>
+                <div class="col-md-6">
+                    <a href="{{ url_for('agenda_data') }}" class="btn btn-ver-agenda mt-3">Verificar Agenda</a>
+                </div>
+            </div>
+        </form>
     </div>
-</body>
+</div>
+
+<!-- Overlay de carregamento -->
+<div id="loadingOverlay">
+  <div class="loading-spinner d-flex flex-column align-items-center">
+    <img src="{{ url_for('static', filename='img/tesoura_loader.gif') }}" alt="Carregando...">
+    <p style="margin-top: 20px; color: white; font-weight: bold;">Aguarde, processando agendamento...</p>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    const overlay = document.getElementById('loadingOverlay');
+
+    if (form && overlay) {
+      form.addEventListener('submit', function () {
+        overlay.style.display = 'flex';
+      });
+    }
+  });
+</script>
 {% endblock %}
 
