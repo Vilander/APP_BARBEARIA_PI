@@ -1,6 +1,7 @@
 from flask import render_template, redirect, url_for, flash, request, abort
 from App_Barbearia import app, database, bcrypt
 from App_Barbearia.forms import FormLogin, FormCriarConta, Form_EditarPerfil, Form_Agendar, Form_Botao
+from App_Barbearia.decorators import admin_required
 from App_Barbearia.models import Usuario, Post
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
@@ -119,6 +120,7 @@ def editar_perfil():
 
 @app.route('/agenda_data', methods=["GET", "POST"])
 @login_required
+@admin_required
 def agenda_data():
     form_botao = Form_Botao()
     lista_agendamentos_data = None
@@ -132,6 +134,7 @@ def agenda_data():
 
 @app.route('/relatorio', methods=['GET'])
 @login_required
+@admin_required
 def relatorio():
     from collections import Counter
 
@@ -160,12 +163,14 @@ def relatorio():
 
 @app.route('/agenda_hoje')
 @login_required
+@admin_required
 def agenda_hoje():
     agendamentos_dia = Post.query.filter_by(data=date.today()).order_by(Post.hora).all()
     return render_template('agenda_hoje.html', agendamentos_dia=agendamentos_dia)
 
 @app.route('/excluir_agendamento/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def excluir_agendamento(id):
     agendamento = Post.query.get_or_404(id)
     database.session.delete(agendamento)
