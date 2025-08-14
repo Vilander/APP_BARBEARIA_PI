@@ -1,0 +1,10 @@
+flask>=2.0
+flask_sqlalchemy>=2.5
+flask_wtf>=1.0
+flask_login>=0.6
+flask_bcrypt>=1.0
+pywhatkit>=5.4
+flask_mail>=0.9
+wtforms>=3.0
+pillow>=10.0
+email_validator>=2.0

@@ -1,0 +1,129 @@
+# Byte-compiled / Otimizado / DLL
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Extensões em C
+*.so
+
+# Build / Distribuição
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Logs de instalador
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Relatórios de testes / cobertura
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py.cover
+.hypothesis/
+.pytest_cache/
+
+# Traduções
+*.mo
+*.pot
+
+# Frameworks populares
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask
+instance/
+.webassets-cache
+
+# Scrapy
+.scrapy
+
+# Documentação
+docs/_build/
+
+# PyBuilder
+.pybuilder/
+target/
+
+# Notebooks
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv / Pipese
+.python-version
+__pypackages__/
+
+# Ambientes virtuais
+.env
+.envrc
+.venv/
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Outros arquivos gerados
+*.sage.py
+.pyre/
+.pytype/
+cython_debug/
+
+# IDEs e editores (comente se não usar)
+# PyCharm
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Spyder
+.spyderproject
+.spyproject
+
+# mkdocs
+/site
+
+# Ruff (cache)
+.ruff_cache/
+
+# Arquivo de configuração pública PyPI
+.pypirc
+
+# Ferramentas como Abstra, Streamlit etc.
+.abstra/
+.streamlit/secrets.toml
