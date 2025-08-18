@@ -7,7 +7,7 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_migrate import Migrate
 
-# Carrega as variáveis de ambiente primeiro
+# Carrega variáveis de ambiente
 load_dotenv()
 
 # Extensões
@@ -21,11 +21,17 @@ migrate = Migrate()
 def create_app():
     app = Flask(__name__, instance_relative_config=True)
 
-    # Configuração do App
+    # Configuração do app
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'chave-secreta-teste'
+
+    # Garante que a pasta instance exista
     if not os.path.exists(app.instance_path):
         os.makedirs(app.instance_path)
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'barbearia.db')}"
+
+    # Caminho absoluto do banco de dados
+    db_path = os.path.join(app.instance_path, 'barbearia.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{db_path}"
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
     # Inicializar extensões
     database.init_app(app)
@@ -36,5 +42,9 @@ def create_app():
     # Registrar rotas
     from .routs import main as main_blueprint
     app.register_blueprint(main_blueprint)
+
+    # **Cria tabelas automaticamente se ainda não existirem**
+    with app.app_context():
+        database.create_all()
 
     return app
