@@ -81,9 +81,9 @@
             <h1>CorteFácil</h1>
             <p>Sua barbearia conectada com estilo e agilidade</p>
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('agendar') }}" class="btn btn-custom">Agendar Agora</a>
+                <a href="{{ url_for('main.agendar') }}" class="btn btn-custom">Agendar Agora</a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-custom">Entrar ou Cadastrar</a>
+                <a href="{{ url_for('main.login') }}" class="btn btn-custom">Entrar ou Cadastrar</a>
             {% endif %}
         </div>
     </section>

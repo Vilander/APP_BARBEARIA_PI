@@ -460,7 +460,7 @@ def login():
             login_user(usuario, remember=form_login.lembrar_dados.data)
             flash(f'Login Feito com Sucesso no E-Mail: {form_login.email.data}', "alert alert-success")
             par_next = request.args.get('next')
-            return redirect(par_next) if par_next else redirect(url_for('home'))
+            return redirect(par_next) if par_next else redirect(url_for('main.home'))
         else:
             flash(f'Falha no Login, Verifique Senha ou E-Mail', 'alert-danger')
 
@@ -470,7 +470,7 @@ def login():
         database.session.add(usuario)
         database.session.commit()
         flash(f'Conta Criada com Sucesso para o E-Mail: {form_criarconta.email.data}', 'alert success')
-        return redirect(url_for('home'))
+        return redirect(url_for('main.home'))
     return render_template('login.html', form_login=form_login, form_criarconta=form_criarconta)
 
 @app.route('/sair')
@@ -544,7 +544,7 @@ def editar_perfil():
             current_user.foto_perfil = nome_imagem
         database.session.commit()
         flash(f'Atualizado com Sucesso para o E-Mail: {form_editar.email.data}', 'alert success')
-        return redirect(url_for('perfil'))
+        return redirect(url_for('main.perfil'))
     elif request.method == "GET":
         form_editar.email.data = current_user.email
         form_editar.username.data = current_user.username
@@ -606,7 +606,7 @@ def excluir_agendamento(id):
     database.session.delete(agendamento)
     database.session.commit()
     flash("Agendamento excluído com sucesso!", "alert-success")
-    return redirect(url_for('agenda_hoje'))
+    return redirect(url_for('main.agenda_hoje'))
 
 
 ```
@@ -779,7 +779,7 @@ from App_Barbearia import routs
                     {{ form_agendar.botao_submit_agendar(class="btn btn-agendar mt-3") }}
                 </div>
                 <div class="col-md-6">
-                    <a href="{{ url_for('agenda_data') }}" class="btn btn-ver-agenda mt-3">Verificar Agenda</a>
+                    <a href="{{ url_for('main.agenda_data') }}" class="btn btn-ver-agenda mt-3">Verificar Agenda</a>
                 </div>
             </div>
         </form>
@@ -957,7 +957,7 @@ from App_Barbearia import routs
         {% if agendamentos_dia %}
             {% for agendamento in agendamentos_dia %}
                 <div class="agenda-item">
-                    <form method="POST" action="{{ url_for('excluir_agendamento', id=agendamento.id) }}">
+                    <form method="POST" action="{{ url_for('main.excluir_agendamento', id=agendamento.id) }}">
                         <p><strong>Cliente:</strong> {{ agendamento.username }}</p>
                         <p><strong>Serviço:</strong> {{ agendamento.servico }}</p>
                         <p><strong>Horário:</strong> {{ agendamento.hora }}</p>
@@ -1179,9 +1179,9 @@ from App_Barbearia import routs
             <h1>CorteFácil</h1>
             <p>Sua barbearia conectada com estilo e agilidade</p>
             {% if current_user.is_authenticated %}
-                <a href="{{ url_for('agendar') }}" class="btn btn-custom">Agendar Agora</a>
+                <a href="{{ url_for('main.agendar') }}" class="btn btn-custom">Agendar Agora</a>
             {% else %}
-                <a href="{{ url_for('login') }}" class="btn btn-custom">Entrar ou Cadastrar</a>
+                <a href="{{ url_for('main.login') }}" class="btn btn-custom">Entrar ou Cadastrar</a>
             {% endif %}
         </div>
     </section>
@@ -1353,7 +1353,7 @@ function toggleSenhaCriar() {
 ```
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #212529; width: 100%;">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{{ url_for('home') }}" style="font-family: 'Brush Script MT', cursive; font-size: 2rem;">
+    <a class="navbar-brand" href="{{ url_for('main.home') }}" style="font-family: 'Brush Script MT', cursive; font-size: 2rem;">
       <img src="{{ url_for('static', filename='logo-barbearia.jpeg') }}" alt="Logo" style="height: 50px; margin-right: 10px; border-radius: 50%;">
       CorteFácil
     </a>
@@ -1366,16 +1366,16 @@ function toggleSenhaCriar() {
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         {% if current_user.is_authenticated %}
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('agendar') }}">Agendar</a>
+          <a class="nav-link" href="{{ url_for('main.agendar') }}">Agendar</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('agenda_data') }}">Consultar Data</a>
+          <a class="nav-link" href="{{ url_for('main.agenda_data') }}">Consultar Data</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('relatorio') }}">Relatório</a>
+          <a class="nav-link" href="{{ url_for('main.relatorio') }}">Relatório</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('agenda_hoje') }}">Agenda de Hoje</a>
+          <a class="nav-link" href="{{ url_for('main.agenda_hoje') }}">Agenda de Hoje</a>
         </li>
         {% endif %}
       </ul>
@@ -1388,18 +1388,18 @@ function toggleSenhaCriar() {
             {{ current_user.username }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
-            <li><a class="dropdown-item" href="{{ url_for('perfil') }}">Ver Perfil</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('editar_perfil') }}">Editar Perfil</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.perfil') }}">Ver Perfil</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.editar_perfil') }}">Editar Perfil</a></li>
             <!-- <li><a class="dropdown-item" href="#">Alterar Senha</a></li> -->
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="{{ url_for('sair') }}">Sair</a></li>
+            <li><a class="dropdown-item text-danger" href="{{ url_for('main.sair') }}">Sair</a></li>
           </ul>
         </li>
       </ul>
       {% else %}
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('login') }}">Entrar</a>
+          <a class="nav-link" href="{{ url_for('main.login') }}">Entrar</a>
         </li>
       </ul>
       {% endif %}
@@ -1474,7 +1474,7 @@ function toggleSenhaCriar() {
             <span>{{ current_user.email }}</span>
         </div>
         <div class="button">
-            <a href="{{ url_for('editar_perfil') }}">
+            <a href="{{ url_for('main.editar_perfil') }}">
                 <button class="btn btn-edit">Editar Perfil</button>
             </a>
         </div>
@@ -1599,7 +1599,7 @@ function toggleSenhaCriar() {
             <canvas id="graficoAgendamentos"></canvas>
         </div>
 
-        <a href="{{ url_for('agenda_hoje') }}" class="btn-agenda-hoje">Ver Agenda de Hoje</a>
+        <a href="{{ url_for('main.agenda_hoje') }}" class="btn-agenda-hoje">Ver Agenda de Hoje</a>
     </div>
 </div>
 

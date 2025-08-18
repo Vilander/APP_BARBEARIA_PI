@@ -1,3 +1,4 @@
+# App_Barbearia/__init__.py
 import os
 from dotenv import load_dotenv
 from flask import Flask
@@ -6,25 +7,34 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_migrate import Migrate
 
+# Carrega as variáveis de ambiente primeiro
 load_dotenv()
 
-app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
-
-basedir = os.path.abspath(os.path.dirname(__file__))
-db_path = os.path.join(basedir, 'instance', 'barbearia.db')
-
-# Extra debugging print
-# print(f"Using database path: {db_path}")
-
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
-
-database = SQLAlchemy(app)
-bcrypt = Bcrypt(app)
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+# Extensões
+database = SQLAlchemy()
+bcrypt = Bcrypt()
+login_manager = LoginManager()
+login_manager.login_view = 'main.login'
 login_manager.login_message_category = 'alert-info'
+migrate = Migrate()
 
-migrate = Migrate(app, database)
+def create_app():
+    app = Flask(__name__, instance_relative_config=True)
 
-from App_Barbearia import routs
+    # Configuração do App
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or 'chave-secreta-teste'
+    if not os.path.exists(app.instance_path):
+        os.makedirs(app.instance_path)
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{os.path.join(app.instance_path, 'barbearia.db')}"
+
+    # Inicializar extensões
+    database.init_app(app)
+    bcrypt.init_app(app)
+    login_manager.init_app(app)
+    migrate.init_app(app, database)
+
+    # Registrar rotas
+    from .routs import main as main_blueprint
+    app.register_blueprint(main_blueprint)
+
+    return app

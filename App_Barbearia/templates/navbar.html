@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #212529; width: 100%;">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{{ url_for('home') }}" style="font-family: 'Brush Script MT', cursive; font-size: 2rem;">
+    <a class="navbar-brand" href="{{ url_for('main.home') }}" style="font-family: 'Brush Script MT', cursive; font-size: 2rem;">
       <img src="{{ url_for('static', filename='logo-barbearia.jpeg') }}" alt="Logo" style="height: 50px; margin-right: 10px; border-radius: 50%;">
       CorteFácil
     </a>
@@ -13,16 +13,16 @@
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
         {% if current_user.is_authenticated %}
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('agendar') }}">Agendar</a>
+          <a class="nav-link" href="{{ url_for('main.agendar') }}">Agendar</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('agenda_data') }}">Consultar Data</a>
+          <a class="nav-link" href="{{ url_for('main.agenda_data') }}">Consultar Data</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('relatorio') }}">Relatório</a>
+          <a class="nav-link" href="{{ url_for('main.relatorio') }}">Relatório</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('agenda_hoje') }}">Agenda de Hoje</a>
+          <a class="nav-link" href="{{ url_for('main.agenda_hoje') }}">Agenda de Hoje</a>
         </li>
         {% endif %}
       </ul>
@@ -35,18 +35,18 @@
             {{ current_user.username }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
-            <li><a class="dropdown-item" href="{{ url_for('perfil') }}">Ver Perfil</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('editar_perfil') }}">Editar Perfil</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.perfil') }}">Ver Perfil</a></li>
+            <li><a class="dropdown-item" href="{{ url_for('main.editar_perfil') }}">Editar Perfil</a></li>
             <!-- <li><a class="dropdown-item" href="#">Alterar Senha</a></li> -->
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="{{ url_for('sair') }}">Sair</a></li>
+            <li><a class="dropdown-item text-danger" href="{{ url_for('main.sair') }}">Sair</a></li>
           </ul>
         </li>
       </ul>
       {% else %}
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('login') }}">Entrar</a>
+          <a class="nav-link" href="{{ url_for('main.login') }}">Entrar</a>
         </li>
       </ul>
       {% endif %}

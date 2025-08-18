@@ -48,7 +48,7 @@
         {% if agendamentos_dia %}
             {% for agendamento in agendamentos_dia %}
                 <div class="agenda-item">
-                    <form method="POST" action="{{ url_for('excluir_agendamento', id=agendamento.id) }}">
+                    <form method="POST" action="{{ url_for('main.excluir_agendamento', id=agendamento.id) }}">
                         <p><strong>Cliente:</strong> {{ agendamento.username }}</p>
                         <p><strong>Serviço:</strong> {{ agendamento.servico }}</p>
                         <p><strong>Horário:</strong> {{ agendamento.hora }}</p>
