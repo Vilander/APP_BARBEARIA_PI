@@ -1,7 +1,7 @@
 # App_Barbearia/routs.py
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
-from App_Barbearia import database, bcrypt
+from App_Barbearia import database, bcrypt, mail # Certifique-se de que `mail` está aqui
 from App_Barbearia.forms import FormLogin, FormCriarConta, Form_Agendar, Form_EditarPerfil, Form_Botao, FormRecuperarSenha, FormRedefinirSenha
 from App_Barbearia.decorators import admin_required
 from App_Barbearia.models import Usuario, Post
@@ -11,12 +11,8 @@ import os
 from PIL import Image
 from sqlalchemy import and_
 from datetime import date, datetime, timedelta
-import pywhatkit as kit
-from flask_mail import Message
-from App_Barbearia import mail
-# from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from flask_mail import Message
-from App_Barbearia import mail
+from flask_mail import Message # Importe apenas a classe Message aqui
+from itsdangerous import URLSafeTimedSerializer
 
 # 🔹 Agora é um Blueprint (não mais app direto)
 main = Blueprint("main", __name__)
@@ -62,9 +58,30 @@ def perfil():
     foto_perfil = url_for("static", filename=f"fotos_perfil/{current_user.foto_perfil}")
     return render_template("perfil.html", foto_perfil=foto_perfil)
 
-def enviar_mensagem_whatsapp(numero_destino):
-    numero_destino = "+55" + numero_destino
-    kit.sendwhatmsg_instantly(numero_destino, "Seu agendamento foi confirmado!", wait_time=10)
+def enviar_email_confirmacao(email_destino, agendamento):
+    msg = Message(
+        subject="Confirmação de Agendamento - Barbearia CorteFácil",
+        recipients=[email_destino],
+        body=f"""Olá, {agendamento.username}!
+        
+Seu agendamento foi confirmado com sucesso.
+
+Detalhes do Agendamento:
+Serviço: {agendamento.servico}
+Data: {agendamento.data.strftime('%d/%m/%Y')}
+Hora: {agendamento.hora}
+
+Se precisar reagendar, entre em contato conosco.
+
+Atenciosamente,
+Equipe CorteFácil
+"""
+    )
+    try:
+        mail.send(msg)
+        print(f"Email de confirmação enviado com sucesso para {email_destino}")
+    except Exception as e:
+        print(f"Falha ao enviar e-mail de confirmação: {e}")
 
 @main.route("/agendar", methods=["GET", "POST"])
 @login_required
@@ -89,7 +106,10 @@ def agendar():
             database.session.add(post)
             database.session.commit()
             flash("Agendado com Sucesso", "alert-success")
-            enviar_mensagem_whatsapp(form_agendar.cell.data)
+            
+            # Chama a função de envio de e-mail ao invés da de WhatsApp
+            enviar_email_confirmacao(current_user.email, post)
+            
             return render_template("agendar.html", form_agendar=form_agendar)
     else:
         print(form_agendar.errors)
@@ -103,7 +123,6 @@ def usuarios():
 
 @main.route("/servicos")
 def servicos():
-    # Renderiza o template para a página de serviços
     return render_template("servicos.html")
 
 def salvar_img(imagem):
@@ -227,18 +246,3 @@ def recuperar_senha():
 def redefinir_senha(token):
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
-
-    usuario = Usuario.verify_reset_token(token)
-    if not usuario:
-        flash("Token de redefinição inválido ou expirado.", "alert-danger")
-        return redirect(url_for("main.recuperar_senha"))
-
-    form_redefinir = FormRedefinirSenha()
-    if form_redefinir.validate_on_submit():
-        senha_crypt = bcrypt.generate_password_hash(form_redefinir.senha.data)
-        usuario.senha = senha_crypt
-        database.session.commit()
-        flash("Sua senha foi redefinida com sucesso!", "alert-success")
-        return redirect(url_for("main.login"))
-
-    return render_template("redefinir_senha.html", form_redefinir=form_redefinir)# Você precisará de outro formulário
