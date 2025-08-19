@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from App_Barbearia import database, bcrypt
-from App_Barbearia.forms import FormLogin, FormCriarConta, Form_Agendar, Form_EditarPerfil, Form_Botao
+from App_Barbearia.forms import FormLogin, FormCriarConta, Form_Agendar, Form_EditarPerfil, Form_Botao, FormRecuperarSenha, FormRedefinirSenha
 from App_Barbearia.decorators import admin_required
 from App_Barbearia.models import Usuario, Post
 from flask_login import login_user, logout_user, current_user, login_required
@@ -12,6 +12,11 @@ from PIL import Image
 from sqlalchemy import and_
 from datetime import date, datetime, timedelta
 import pywhatkit as kit
+from flask_mail import Message
+from App_Barbearia import mail
+# from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from flask_mail import Message
+from App_Barbearia import mail
 
 # 🔹 Agora é um Blueprint (não mais app direto)
 main = Blueprint("main", __name__)
@@ -191,3 +196,49 @@ def excluir_agendamento(id):
     database.session.commit()
     flash("Agendamento excluído com sucesso!", "alert-success")
     return redirect(url_for("main.agenda_hoje"))
+
+#redefinir senha
+
+def enviar_email_recuperacao(usuario):
+    token = usuario.get_reset_token()
+    msg = Message('Recuperação de Senha',
+                  sender='noreply@barbeariacortefacil.com',
+                  recipients=[usuario.email])
+    msg.body = f'''Para redefinir sua senha, visite o seguinte link:
+{url_for('main.redefinir_senha', token=token, _external=True)}
+Se você não solicitou esta redefinição, simplesmente ignore este e-mail e nenhuma alteração será feita na sua senha.
+'''
+    mail.send(msg)
+
+@main.route("/recuperar_senha", methods=["GET", "POST"])
+def recuperar_senha():
+    form_recuperar = FormRecuperarSenha()
+    if form_recuperar.validate_on_submit():
+        usuario = Usuario.query.filter_by(email=form_recuperar.email.data).first()
+        if usuario:
+            enviar_email_recuperacao(usuario)
+            flash("Um e-mail de recuperação de senha foi enviado.", "alert-success")
+            return redirect(url_for("main.login"))
+        else:
+            flash("E-mail não encontrado.", "alert-danger")
+    return render_template("recuperar_senha.html", form_recuperar=form_recuperar)
+
+@main.route("/redefinir_senha/<token>", methods=["GET", "POST"])
+def redefinir_senha(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('main.home'))
+
+    usuario = Usuario.verify_reset_token(token)
+    if not usuario:
+        flash("Token de redefinição inválido ou expirado.", "alert-danger")
+        return redirect(url_for("main.recuperar_senha"))
+
+    form_redefinir = FormRedefinirSenha()
+    if form_redefinir.validate_on_submit():
+        senha_crypt = bcrypt.generate_password_hash(form_redefinir.senha.data)
+        usuario.senha = senha_crypt
+        database.session.commit()
+        flash("Sua senha foi redefinida com sucesso!", "alert-success")
+        return redirect(url_for("main.login"))
+
+    return render_template("redefinir_senha.html", form_redefinir=form_redefinir)# Você precisará de outro formulário

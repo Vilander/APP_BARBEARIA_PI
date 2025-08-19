@@ -322,6 +322,7 @@ canvas {
     animation: fadeInUp 2s;
 }
 
+
 /* Footer */
 footer {
     background-color: #111;
@@ -331,12 +332,27 @@ footer {
     font-size: var(--font-size-footer);
 }
 
+/*outros*/
+.recuperar-senha a {
+    text-decoration: none;
+    color: var(--color-placeholder);
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.recuperar-senha a:hover{
+    scale: 1.1;
+    color: var(--color-bg-primary) ;
+}
+
 /* Animações */
 @keyframes fadeIn {
     from {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -348,6 +364,7 @@ footer {
         opacity: 0;
         transform: translateY(-30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -359,6 +376,7 @@ footer {
         opacity: 0;
         transform: translateY(30px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);

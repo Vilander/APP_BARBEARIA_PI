@@ -5,6 +5,10 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationE
 from App_Barbearia.models import Usuario, Post
 from flask_login import current_user
 from datetime import datetime
+from flask_wtf import FlaskForm
+from wtforms import StringField, PasswordField, SubmitField
+from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
+
 class FormCriarConta(FlaskForm):
     username = StringField('Nome de Usuário', validators=[DataRequired()])
     email = StringField('E-mail', validators=[DataRequired(), Email()])
@@ -69,3 +73,13 @@ class Form_Botao(FlaskForm):
     # seus outros campos aqui
     data_pesquisa = DateField('Data de Pesquisa')
     botao_submit_agenda_data = SubmitField('Pesquisar Agendamentos')
+
+
+class FormRecuperarSenha(FlaskForm):
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
+    submit = SubmitField('Enviar')
+
+class FormRedefinirSenha(FlaskForm):
+    senha = PasswordField('Nova Senha', validators=[DataRequired()])
+    confirmacao_senha = PasswordField('Confirmar Nova Senha', validators=[DataRequired(), EqualTo('senha', message='As senhas devem ser iguais')])
+    submit = SubmitField('Redefinir Senha')

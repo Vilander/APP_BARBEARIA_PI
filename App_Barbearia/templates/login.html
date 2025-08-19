@@ -1,8 +1,9 @@
 {% extends 'base.html' %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 {% block body %}
+
 <head>
-  
+
 </head>
 
 <div class="container mt-5">
@@ -28,6 +29,9 @@
                         {{ form_login.lembrar_dados.label(class="form-check-label") }}
                     </div>
                     {{ form_login.botao_submit_login(class="btn btn-login w-100") }}
+                    <div class="recuperar-senha mb-3">
+                        <small><a href="{{ url_for('main.recuperar_senha') }}">Esqueci minha senha</a></small>
+                    </div>
                 </form>
             </div>
         </div>
@@ -63,14 +67,13 @@
 </div>
 
 <script>
-function toggleSenha() {
-    const input = document.getElementById("senhaInput");
-    input.type = input.type === "password" ? "text" : "password";
-}
-function toggleSenhaCriar() {
-    const input = document.getElementById("senhaCriarInput");
-    input.type = input.type === "password" ? "text" : "password";
-}
+    function toggleSenha() {
+        const input = document.getElementById("senhaInput");
+        input.type = input.type === "password" ? "text" : "password";
+    }
+    function toggleSenhaCriar() {
+        const input = document.getElementById("senhaCriarInput");
+        input.type = input.type === "password" ? "text" : "password";
+    }
 </script>
 {% endblock %}
-
