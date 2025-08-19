@@ -1,7 +1,7 @@
 # App_Barbearia/routs.py
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
-from App_Barbearia import database, bcrypt, mail # Certifique-se de que `mail` está aqui
+from App_Barbearia import database, bcrypt, mail, create_app
 from App_Barbearia.forms import FormLogin, FormCriarConta, Form_Agendar, Form_EditarPerfil, Form_Botao, FormRecuperarSenha, FormRedefinirSenha
 from App_Barbearia.decorators import admin_required
 from App_Barbearia.models import Usuario, Post
@@ -11,11 +11,21 @@ import os
 from PIL import Image
 from sqlalchemy import and_
 from datetime import date, datetime, timedelta
-from flask_mail import Message # Importe apenas a classe Message aqui
+from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
+from .ml_model import prever_proxima_visita, treinar_modelo_ml, preparar_dados_para_ml
+
+# Instância global do modelo de ML para ser acessível nas rotas
+modelo_ml_global = None
 
 # 🔹 Agora é um Blueprint (não mais app direto)
 main = Blueprint("main", __name__)
+
+
+# 🟢 IMPORTANTE: A lógica de treinamento do modelo foi removida daqui,
+# pois o decorador @main.before_app_first_request não é válido para Blueprints.
+# Essa lógica deve ser executada no seu arquivo principal (main.py) após a criação do app.
+
 
 @main.route("/")
 def home():
@@ -83,48 +93,7 @@ Equipe CorteFácil
     except Exception as e:
         print(f"Falha ao enviar e-mail de confirmação: {e}")
 
-@main.route("/agendar", methods=["GET", "POST"])
-@login_required
-def agendar():
-    form_agendar = Form_Agendar()
-
-    if form_agendar.validate_on_submit():
-        agendamento_existente = Post.query.filter(
-            and_(Post.data == form_agendar.datar.data, Post.hora == form_agendar.hora.data)
-        ).first()
-        if agendamento_existente:
-            flash("Já existe um agendamento para essa data e hora.", "alert-danger")
-        else:
-            post = Post(
-                username=form_agendar.username.data,
-                cell=form_agendar.cell.data,
-                servico=form_agendar.servico.data,
-                data=form_agendar.datar.data,
-                hora=form_agendar.hora.data,
-                id_usuario=current_user.id,
-            )
-            database.session.add(post)
-            database.session.commit()
-            flash("Agendado com Sucesso", "alert-success")
-            
-            # Chama a função de envio de e-mail ao invés da de WhatsApp
-            enviar_email_confirmacao(current_user.email, post)
-            
-            return render_template("agendar.html", form_agendar=form_agendar)
-    else:
-        print(form_agendar.errors)
-
-    return render_template("agendar.html", form_agendar=form_agendar)
-
-@main.route("/usuarios")
-@login_required
-def usuarios():
-    return render_template("usuarios.html")
-
-@main.route("/servicos")
-def servicos():
-    return render_template("servicos.html")
-
+# Função para salvar a imagem
 def salvar_img(imagem):
     codigo = secrets.token_hex(8)
     nome, extensao = os.path.splitext(imagem.filename)
@@ -155,6 +124,53 @@ def editar_perfil():
 
     foto_perfil = url_for("static", filename=f"fotos_perfil/{current_user.foto_perfil}")
     return render_template("editar_perfil.html", foto_perfil=foto_perfil, form_editar=form_editar)
+
+
+@main.route("/agendar", methods=["GET", "POST"])
+@login_required
+def agendar():
+    form_agendar = Form_Agendar()
+    
+    # Adiciona a previsão na página de agendamento se o modelo estiver disponível
+    data_sugerida = None
+    if modelo_ml_global:
+        try:
+            data_sugerida = prever_proxima_visita(modelo_ml_global, current_user.id)
+        except Exception as e:
+            print(f"Erro ao prever a data para o usuário {current_user.id}: {e}")
+            data_sugerida = None
+    
+    if form_agendar.validate_on_submit():
+        agendamento_existente = Post.query.filter(
+            and_(Post.data == form_agendar.datar.data, Post.hora == form_agendar.hora.data)
+        ).first()
+        if agendamento_existente:
+            flash("Já existe um agendamento para essa data e hora.", "alert-danger")
+        else:
+            post = Post(
+                username=form_agendar.username.data,
+                cell=form_agendar.cell.data,
+                servico=form_agendar.servico.data,
+                data=form_agendar.datar.data,
+                hora=form_agendar.hora.data,
+                id_usuario=current_user.id,
+            )
+            database.session.add(post)
+            database.session.commit()
+            flash("Agendado com Sucesso", "alert-success")
+            
+            # 🟢 Chamada para a função de envio de e-mail.
+            enviar_email_confirmacao(current_user.email, post)
+            
+            # 🟢 Sugestão: Você pode redirecionar para uma página de sucesso
+            # return redirect(url_for('main.alguma_pagina_de_sucesso'))
+
+            return render_template("agendar.html", form_agendar=form_agendar)
+    else:
+        print(form_agendar.errors)
+
+    return render_template("agendar.html", form_agendar=form_agendar, data_sugerida=data_sugerida)
+
 
 @main.route("/agenda_data", methods=["GET", "POST"])
 @login_required
@@ -246,3 +262,12 @@ def recuperar_senha():
 def redefinir_senha(token):
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
+
+@main.route("/usuarios")
+@login_required
+def usuarios():
+    return render_template("usuarios.html")
+
+@main.route("/servicos")
+def servicos():
+    return render_template("servicos.html")

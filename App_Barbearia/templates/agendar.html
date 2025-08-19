@@ -6,6 +6,16 @@
 <div class="container mt-5 mb-5">
   <div class="card-agendar">
     <h2 class="text-center mb-4">Agende seu Horário</h2>
+
+    {% if data_sugerida %}
+    <div class="alert alert-info" role="alert">
+      <p><strong>Sugestão para você!</strong></p>
+      <p>Com base nos seus agendamentos anteriores, o modelo de Machine Learning sugere que sua próxima visita seja em
+        <strong>{{ data_sugerida }}</strong>.</p>
+      <p>O que você acha? Podemos agendar para você!</p>
+    </div>
+    {% endif %}
+
     <form method="POST">
       {{ form_agendar.csrf_token }}
       <div class="row">
