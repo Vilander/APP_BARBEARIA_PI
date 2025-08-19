@@ -4,42 +4,44 @@
 
 
 <div class="container mt-5 mb-5">
-    <div class="card-agendar">
-        <h2 class="text-center mb-4">Agende seu Horário</h2>
-        <form method="POST">
-            {{ form_agendar.csrf_token }}
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    {{ form_agendar.username.label(class="form-label") }}
-                    {{ form_agendar.username(class="form-control", placeholder="Seu nome") }}
-                </div>
-                <div class="col-md-6 mb-3">
-                    {{ form_agendar.cell.label(class="form-label") }}
-                    {{ form_agendar.cell(class="form-control", placeholder="DDD + Celular") }}
-                </div>
-                <div class="col-md-6 mb-3">
-                    {{ form_agendar.servico.label(class="form-label") }}
-                    {{ form_agendar.servico(class="form-control") }}
-                </div>
-                <div class="col-md-3 mb-3">
-                    {{ form_agendar.datar.label(class="form-label") }}
-                    {{ form_agendar.datar(class="form-control") }}
-                </div>
-                <div class="col-md-3 mb-3">
-                    {{ form_agendar.hora.label(class="form-label") }}
-                    {{ form_agendar.hora(class="form-control") }}
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    {{ form_agendar.botao_submit_agendar(class="btn btn-agendar mt-3") }}
-                </div>
-                <div class="col-md-6">
-                    <a href="{{ url_for('main.agenda_data') }}" class="btn btn-ver-agenda mt-3">Verificar Agenda</a>
-                </div>
-            </div>
-        </form>
-    </div>
+  <div class="card-agendar">
+    <h2 class="text-center mb-4">Agende seu Horário</h2>
+    <form method="POST">
+      {{ form_agendar.csrf_token }}
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          {{ form_agendar.username.label(class="form-label") }}
+          {{ form_agendar.username(class="form-control", placeholder="Seu nome") }}
+        </div>
+        <div class="col-md-6 mb-3">
+          {{ form_agendar.cell.label(class="form-label") }}
+          {{ form_agendar.cell(class="form-control", placeholder="DDD + Celular") }}
+        </div>
+        <div class="col-md-6 mb-3">
+          {{ form_agendar.servico.label(class="form-label") }}
+          {{ form_agendar.servico(class="form-control") }}
+        </div>
+        <div class="col-md-3 mb-3">
+          {{ form_agendar.datar.label(class="form-label") }}
+          {{ form_agendar.datar(class="form-control") }}
+        </div>
+        <div class="col-md-3 mb-3">
+          {{ form_agendar.hora.label(class="form-label") }}
+          {{ form_agendar.hora(class="form-control") }}
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6">
+          {{ form_agendar.botao_submit_agendar(class="btn btn-agendar mt-3") }}
+        </div>
+        <div class="col-md-6">
+          {% if current_user.is_authenticated and current_user.role == 'admin' %}
+          <a href="{{ url_for('main.agenda_data') }}" class="btn btn-ver-agenda mt-3">Verificar Agenda</a>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Overlay de carregamento -->
@@ -63,4 +65,3 @@
   });
 </script>
 {% endblock %}
-

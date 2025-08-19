@@ -15,20 +15,22 @@
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('main.agendar') }}">Agendar</a>
         </li>
+        {% if current_user.is_authenticated and current_user.role == 'admin' %}
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('main.agenda_data') }}">Consultar Data</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('main.relatorio') }}">Relatório</a>
+          <a class="nav-link" href="{{ url_for('main.relatorio') }}">Relatórios</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{{ url_for('main.agenda_hoje') }}">Agenda de Hoje</a>
         </li>
         {% endif %}
+        {% endif %}
       </ul>
 
-      {% if current_user.is_authenticated %}
       <ul class="navbar-nav ms-auto">
+        {% if current_user.is_authenticated %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="perfilDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             <img src="{{ url_for('static', filename='fotos_perfil/' + current_user.foto_perfil) }}" alt="Perfil" class="rounded-circle me-2" width="35" height="35">
@@ -37,20 +39,19 @@
           <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="perfilDropdown">
             <li><a class="dropdown-item" href="{{ url_for('main.perfil') }}">Ver Perfil</a></li>
             <li><a class="dropdown-item" href="{{ url_for('main.editar_perfil') }}">Editar Perfil</a></li>
-            <!-- <li><a class="dropdown-item" href="#">Alterar Senha</a></li> -->
             <li><hr class="dropdown-divider"></li>
             <li><a class="dropdown-item text-danger" href="{{ url_for('main.sair') }}">Sair</a></li>
           </ul>
         </li>
-      </ul>
-      {% else %}
-      <ul class="navbar-nav ms-auto">
+        {% else %}
         <li class="nav-item">
-          <a class="nav-link" href="{{ url_for('main.login') }}">Entrar</a>
+          <a class="nav-link" href="{{ url_for('main.login') }}">Login</a>
         </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('main.login') }}">Cadastrar</a>
+        </li>
+        {% endif %}
       </ul>
-      {% endif %}
     </div>
   </div>
 </nav>
-

@@ -96,6 +96,11 @@ def agendar():
 def usuarios():
     return render_template("usuarios.html")
 
+@main.route("/servicos")
+def servicos():
+    # Renderiza o template para a página de serviços
+    return render_template("servicos.html")
+
 def salvar_img(imagem):
     codigo = secrets.token_hex(8)
     nome, extensao = os.path.splitext(imagem.filename)
