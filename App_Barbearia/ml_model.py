@@ -4,9 +4,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
 
-# Importações relativas, pois este arquivo está dentro do pacote App_Barbearia
-from . import create_app, database
-from .models import Post, Usuario
+try:
+    # Importações relativas, pois este arquivo está dentro do pacote App_Barbearia
+    from . import create_app, database
+    from .models import Post, Usuario
+except ImportError:
+    print("Erro: Este arquivo deve ser executado como um módulo.")
+    print("Por favor, execute o seguinte comando a partir da pasta raiz do seu projeto:")
+    print("python -m App_Barbearia.ml_model")
+    exit()
 
 
 def preparar_dados_para_ml():
@@ -33,84 +39,65 @@ def preparar_dados_para_ml():
     # Calcula a diferença em dias entre as visitas de cada usuário
     df['dias_entre_visitas'] = df.groupby('id_usuario')['data_agendamento'].diff().dt.days.fillna(0)
     
-    # Cria as features (entradas para o modelo) e o target (o que o modelo deve prever)
-    features = []
-    targets = []
+    # Cria a coluna com o dia da semana da última visita (segunda=0, domingo=6)
+    df['dia_da_semana'] = df['data_agendamento'].dt.dayofweek
     
-    for user_id, group in df.groupby('id_usuario'):
-        # A média de dias entre visitas é uma feature importante para o modelo
-        # É a base do "padrão" de agendamento de cada usuário
-        avg_days = group['dias_entre_visitas'].mean()
-        
-        # Iteramos sobre o histórico de cada usuário para treinar o modelo
-        # A primeira visita de cada usuário não tem um intervalo anterior
-        for i in range(1, len(group)):
-            dias_desde_ultima = (group['data_agendamento'].iloc[i] - group['data_agendamento'].iloc[i-1]).days
-            targets.append(dias_desde_ultima)
-            
-            # As features serão a média de dias e o dia da semana da visita anterior
-            features.append([avg_days, group['data_agendamento'].iloc[i-1].weekday()])
-            
-    if not features:
-        print("Dados insuficientes para criar features de treinamento.")
+    # Apenas para remover a primeira linha de cada usuário (onde a diferença de dias é 0)
+    df = df[df['dias_entre_visitas'] > 0]
+    
+    if len(df) < 2:
+        print("Dados insuficientes para treinar o modelo após o pré-processamento.")
         return None, None
-        
-    X = pd.DataFrame(features, columns=['media_dias_entre_visitas', 'dia_da_semana'])
-    y = pd.Series(targets, name='dias_para_proxima_visita')
-    
+
+    # Recursos (features) e Alvo (target) para o modelo
+    X = df[['dias_entre_visitas', 'dia_da_semana']]
+    y = df['dias_entre_visitas'] # O alvo é a próxima visita, mas usaremos a anterior como base
+
     return X, y
 
 def treinar_modelo_ml(X, y):
-    """Treina o modelo de regressão e retorna o modelo treinado."""
-    
-    # Divide os dados em conjuntos de treino e teste
+    """Treina o modelo de Machine Learning com os dados preparados."""
+    # Dividir os dados em conjuntos de treinamento e teste
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    # Utiliza um modelo de Floresta Aleatória para a regressão
+
+    # Inicializar e treinar o modelo de Regressão Random Forest
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
-    
-    # Avalia o modelo e imprime o erro para ver o quão preciso ele é
+
+    # Avaliar o modelo
     y_pred = model.predict(X_test)
     mse = mean_squared_error(y_test, y_pred)
     print(f"Erro Quadrático Médio do modelo: {mse:.2f}")
-    
+
     return model
 
 def prever_proxima_visita(model, id_usuario):
     """
-    Prevê a próxima data de agendamento para um usuário específico.
-    
+    Prevê a data da próxima visita para um usuário específico.
     Args:
         model: O modelo de ML treinado.
-        id_usuario (int): O ID do usuário para o qual a previsão será feita.
-        
+        id_usuario: O ID do usuário para quem a previsão será feita.
     Returns:
-        str: A data prevista em formato 'dd/mm/aaaa' ou None se não houver dados.
+        A data prevista no formato 'DD/MM/AAAA' ou None se não houver dados.
     """
+    # Busca os agendamentos do usuário, ordenados pela data de forma descendente
+    agendamentos_usuario = Post.query.filter_by(id_usuario=id_usuario).order_by(Post.data.desc()).all()
     
-    # Encontra o último agendamento do usuário
-    ultimo_agendamento = Post.query.filter_by(id_usuario=id_usuario).order_by(Post.data.desc()).first()
-    if not ultimo_agendamento:
-        return None
-        
-    # Calcula a média de dias entre as visitas do usuário
-    historico_usuario = Post.query.filter_by(id_usuario=id_usuario).order_by(Post.data).all()
-    if len(historico_usuario) < 2:
-        # Se o usuário tem apenas uma visita, a média de dias não pode ser calculada.
-        # Nesses casos, a previsão não será tão precisa.
-        media_dias = None
-        
-    else:
-        datas = pd.Series([ag.data for ag in historico_usuario])
-        media_dias = datas.diff().dt.days.mean()
-    
-    # Calcula a feature "dia da semana" com base na última visita
+    if not agendamentos_usuario or len(agendamentos_usuario) < 2:
+        print(f"Dados insuficientes para o usuário {id_usuario}.")
+        return None # Retorna None se não houver agendamentos ou se houver apenas um
+
+    # Calcula a média dos dias entre as visitas
+    datas = [ag.data for ag in agendamentos_usuario]
+    diferencas_dias = [(datas[i] - datas[i+1]).days for i in range(len(datas)-1)]
+    media_dias = sum(diferencas_dias) / len(diferencas_dias) if diferencas_dias else None
+
+    # Último agendamento do usuário
+    ultimo_agendamento = agendamentos_usuario[0]
     dia_da_semana_ultima_visita = ultimo_agendamento.data.weekday()
 
-    # Prepara a entrada para o modelo com as features calculadas
-    # Se media_dias for None, o modelo pode ter um comportamento imprevisível.
-    # Em um projeto real, você usaria uma média global ou outro valor.
+    # Se a média de dias for None, significa que só há um agendamento.
+    # Neste projeto real, você usaria uma média global ou outro valor.
     if media_dias is None:
         return None # Retorna None se não houver dados suficientes
 
@@ -127,8 +114,11 @@ def prever_proxima_visita(model, id_usuario):
 
 
 if __name__ == '__main__':
-    # Este bloco permite que você teste o arquivo ml_model.py diretamente
-    # sem rodar o servidor Flask.
+    # Este bloco permite que você teste o arquivo ml_model.py diretamente.
+    # A maneira correta de executá-lo é a partir da pasta raiz do projeto:
+    # python -m App_Barbearia.ml_model
+    # Isso garante que as importações relativas funcionem.
+    from . import create_app
     app = create_app()
     with app.app_context():
         X, y = preparar_dados_para_ml()
@@ -136,11 +126,15 @@ if __name__ == '__main__':
             modelo_treinado = treinar_modelo_ml(X, y)
             
             # Exemplo de como usar a previsão para um usuário com ID 1
-            id_cliente_teste = 1
+            # 💡 Altere o id_cliente_teste para o ID de um usuário existente
+            id_cliente_teste = 1 
             data_sugerida = prever_proxima_visita(modelo_treinado, id_cliente_teste)
             
             if data_sugerida:
-                print(f"A próxima visita do usuário {id_cliente_teste} está prevista para: {data_sugerida}")
+                print(f"Modelo treinado com sucesso!")
+                print(f"Data sugerida para o usuário {id_cliente_teste}: {data_sugerida}")
             else:
-                print(f"Não foi possível prever a data para o usuário {id_cliente_teste} (dados insuficientes).")
+                print("Não foi possível fazer uma previsão. Verifique se o usuário tem agendamentos suficientes.")
+        else:
+            print("Não foi possível treinar o modelo. Dados insuficientes.")
 

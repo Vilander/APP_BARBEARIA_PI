@@ -2,75 +2,147 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 {% block body %}
 
+<!-- Adiciona a biblioteca Chart.js para criar o gráfico -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <div class="container mt-5 mb-5">
-    <div class="card-relatorio">
+    <div class="card-agendar p-4">
         <h2 class="text-center mb-4">Relatório de Agendamentos</h2>
-        <form method="GET" class="row g-3 mb-4">
-            <div class="col-md-5">
-                <label for="inicio" class="form-label">Data Início:</label>
-                <input type="date" id="inicio" name="inicio" class="form-control"
-                    value="{{ request.args.get('inicio', '') }}">
-            </div>
-            <div class="col-md-5">
-                <label for="fim" class="form-label">Data Fim:</label>
-                <input type="date" id="fim" name="fim" class="form-control" value="{{ request.args.get('fim', '') }}">
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="btn btn-filtrar w-100">Filtrar</button>
+
+        <!-- Formulário para filtrar por data -->
+        <form method="GET" action="{{ url_for('main.relatorio') }}" class="mb-4">
+            <div class="row">
+                <div class="col-md-5">
+                    <label for="inicio" class="form-label">Data de Início:</label>
+                    <input type="date" id="inicio" name="inicio" class="form-control" value="{{ inicio }}">
+                </div>
+                <div class="col-md-5">
+                    <label for="fim" class="form-label">Data de Fim:</label>
+                    <input type="date" id="fim" name="fim" class="form-control" value="{{ fim }}">
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+                </div>
             </div>
         </form>
 
-        <div class="chart-container">
-            <canvas id="graficoAgendamentos"></canvas>
+        <!-- Container para o gráfico de agendamentos por dia -->
+        <div class="row">
+            <div class="col-md-12">
+                <h3 class="text-center mt-4 mb-3">Agendamentos por Dia</h3>
+                <div class="chart-container" style="position: relative; height:40vh; width:100%">
+                    <canvas id="meuGraficoDeBarras"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 🆕 Container para o novo gráfico de análise por serviço -->
+        <div class="row mt-5">
+            <div class="col-md-12">
+                <h3 class="text-center mt-4 mb-3">Agendamentos por Tipo de Serviço</h3>
+                <div class="chart-container d-flex justify-content-center" style="position: relative; height:40vh; width:100%">
+                    <canvas id="meuGraficoDeDonut"></canvas>
+                </div>
+            </div>
         </div>
 
-        <a href="{{ url_for('main.agenda_hoje') }}" class="btn-agenda-hoje">Ver Agenda de Hoje</a>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    const ctx = document.getElementById('graficoAgendamentos').getContext('2d');
-    const grafico = new Chart(ctx, {
+    // Este é o bloco de script que gera o gráfico de barras usando Chart.js
+    const labels = {{ labels|tojson }};
+    const valores = {{ valores|tojson }};
+    const dataBar = {
+        labels: labels,
+        datasets: [{
+            label: 'Número de Agendamentos',
+            data: valores,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+        }]
+    };
+    const configBar = {
         type: 'bar',
-        data: {
-            labels: {{ labels| tojson }},
-    datasets: [{
-        label: 'Agendamentos por Dia',
-        data: {{ valores| tojson }},
-        backgroundColor: 'rgba(255, 183, 0, 0.8)',
-        borderRadius: 8,
-        barThickness: 30,
-        borderSkipped: false
-            }]
-        },
-    options: {
-        responsive: true,
+        data: dataBar,
+        options: {
+            responsive: true,
             maintainAspectRatio: false,
-                scales: {
-            x: {
-                ticks: { color: '#ccc' },
-                grid: { display: false }
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Número de Agendamentos'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Data'
+                    }
+                }
             },
-            y: {
-                beginAtZero: true,
-                    ticks: { stepSize: 1, color: '#ccc' },
-                grid: { color: '#444' }
+            plugins: {
+                legend: { display: true },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) { label += ': '; }
+                            if (context.parsed.y !== null) { label += context.parsed.y; }
+                            return label;
+                        }
+                    }
+                }
             }
         },
-        plugins: {
-            legend: {
-                labels: { color: '#f8f9fa', font: { weight: 'bold' } }
-            },
-            tooltip: {
-                backgroundColor: '#212529',
-                    titleColor: '#ffb700',
-                        bodyColor: '#fff',
-                            borderColor: '#ffb700',
-                                borderWidth: 1
+    };
+    const myChartBar = new Chart(document.getElementById('meuGraficoDeBarras'), configBar);
+
+    // 🆕 Este é o novo bloco de script para o gráfico de donut
+    const serviceLabels = {{ service_labels|tojson }};
+    const serviceCounts = {{ service_counts|tojson }};
+    
+    // Define uma paleta de cores para o gráfico
+    const serviceColors = [
+        'rgba(255, 99, 132, 0.7)', // Rosa para o primeiro item
+        'rgba(54, 162, 235, 0.7)', // Azul para o segundo
+        'rgba(255, 206, 86, 0.7)', // Amarelo para o terceiro
+        'rgba(75, 192, 192, 0.7)', // Verde para o quarto
+        'rgba(153, 102, 255, 0.7)', // Roxo para o quinto
+        'rgba(255, 159, 64, 0.7)' // Laranja para o sexto
+    ];
+
+    const dataDonut = {
+        labels: serviceLabels, // Os rótulos dos serviços
+        datasets: [{
+            label: 'Total de Agendamentos',
+            data: serviceCounts, // As contagens de cada serviço
+            backgroundColor: serviceColors,
+            hoverOffset: 4
+        }]
+    };
+    const configDonut = {
+        type: 'doughnut',
+        data: dataDonut,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                },
+                title: {
+                    display: false,
+                    text: 'Agendamentos por Tipo de Serviço'
+                }
             }
         }
-    }
-    });
+    };
+    const myChartDonut = new Chart(document.getElementById('meuGraficoDeDonut'), configDonut);
+
 </script>
+
 {% endblock %}

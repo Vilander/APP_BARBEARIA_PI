@@ -9,7 +9,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 import os
 from PIL import Image
-from sqlalchemy import and_
+from sqlalchemy import and_, func
 from datetime import date, datetime, timedelta
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
@@ -20,12 +20,6 @@ modelo_ml_global = None
 
 # 🔹 Agora é um Blueprint (não mais app direto)
 main = Blueprint("main", __name__)
-
-
-# 🟢 IMPORTANTE: A lógica de treinamento do modelo foi removida daqui,
-# pois o decorador @main.before_app_first_request não é válido para Blueprints.
-# Essa lógica deve ser executada no seu arquivo principal (main.py) após a criação do app.
-
 
 @main.route("/")
 def home():
@@ -186,15 +180,45 @@ def agenda_data():
 
     return render_template("agenda_data.html", lista_agendamentos_data=lista_agendamentos_data, form_botao=form_botao)
 
+# @main.route("/relatorio", methods=["GET"])
+# @login_required
+# @admin_required
+# def relatorio():
+#     from collections import Counter
+
+#     hoje = date.today()
+#     sete_dias_atras = hoje - timedelta(days=6)
+
+#     inicio_str = request.args.get("inicio") or sete_dias_atras.strftime("%Y-%m-%d")
+#     fim_str = request.args.get("fim") or hoje.strftime("%Y-%m-%d")
+
+#     try:
+#         data_inicio = datetime.strptime(inicio_str, "%Y-%m-%d").date()
+#         data_fim = datetime.strptime(fim_str, "%Y-%m-%d").date()
+#     except:
+#         flash("Erro no formato da data.", "alert-danger")
+#         data_inicio = sete_dias_atras
+#         data_fim = hoje
+
+#     agendamentos = Post.query.filter(Post.data.between(data_inicio, data_fim)).all()
+#     contagem_por_dia = Counter([ag.data.strftime("%d/%m/%Y") for ag in agendamentos])
+
+#     datas_ordenadas = sorted(contagem_por_dia.items(), key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
+#     labels = [item[0] for item in datas_ordenadas]
+#     valores = [item[1] for item in datas_ordenadas]
+
+#     return render_template("relatorio.html", labels=labels, valores=valores, inicio=inicio_str, fim=fim_str)
+
+#novo relatório
+
 @main.route("/relatorio", methods=["GET"])
 @login_required
 @admin_required
 def relatorio():
-    from collections import Counter
-
     hoje = date.today()
-    sete_dias_atras = hoje - timedelta(days=6)
-
+    sete_dias_atras = hoje - timedelta(days=7)
+    
+    # Obtém as datas do filtro ou usa o período padrão
     inicio_str = request.args.get("inicio") or sete_dias_atras.strftime("%Y-%m-%d")
     fim_str = request.args.get("fim") or hoje.strftime("%Y-%m-%d")
 
@@ -206,14 +230,33 @@ def relatorio():
         data_inicio = sete_dias_atras
         data_fim = hoje
 
-    agendamentos = Post.query.filter(Post.data.between(data_inicio, data_fim)).all()
-    contagem_por_dia = Counter([ag.data.strftime("%d/%m/%Y") for ag in agendamentos])
-
+    # Lógica para o primeiro gráfico (Agendamentos por Dia)
+    agendamentos_por_dia = Post.query.filter(Post.data.between(data_inicio, data_fim)).all()
+    from collections import Counter
+    contagem_por_dia = Counter([ag.data.strftime("%d/%m/%Y") for ag in agendamentos_por_dia])
     datas_ordenadas = sorted(contagem_por_dia.items(), key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
     labels = [item[0] for item in datas_ordenadas]
     valores = [item[1] for item in datas_ordenadas]
 
-    return render_template("relatorio.html", labels=labels, valores=valores, inicio=inicio_str, fim=fim_str)
+    # 🆕 Lógica para o segundo gráfico (Análise por Serviço)
+    # 🔹 Consulta o banco de dados para obter a contagem de agendamentos por tipo de serviço
+    contagem_servicos = database.session.query(Post.servico, func.count(Post.id)).filter(
+        Post.data.between(data_inicio, data_fim)
+    ).group_by(Post.servico).all()
+
+    # 🔹 Prepara os dados para o gráfico de donut
+    service_labels = [item[0] for item in contagem_servicos]
+    service_counts = [item[1] for item in contagem_servicos]
+
+    return render_template(
+        "relatorio.html",
+        labels=labels,
+        valores=valores,
+        service_labels=service_labels, # Envia os rótulos de serviço para o template
+        service_counts=service_counts, # Envia as contagens de serviço para o template
+        inicio=inicio_str,
+        fim=fim_str
+    )
 
 @main.route("/agenda_hoje")
 @login_required
