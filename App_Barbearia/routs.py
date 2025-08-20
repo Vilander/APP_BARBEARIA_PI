@@ -15,6 +15,8 @@ from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
 import pywhatkit as kit
 from .ml_model import preparar_dados_para_ml, treinar_modelo_ml, prever_proxima_visita, segmentar_clientes_kmeans
+from flask import render_template
+
 
 # Instância global do modelo de ML para ser acessível nas rotas
 modelo_ml_global = None
@@ -374,3 +376,8 @@ def usuarios():
 @main.route("/servicos")
 def servicos():
     return render_template("servicos.html")
+
+# E adicione este código ao final do seu arquivo routs.py
+@main.app_errorhandler(404)
+def pagina_nao_encontrada(e):
+    return render_template('404.html'), 404
