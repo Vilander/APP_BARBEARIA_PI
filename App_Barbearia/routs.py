@@ -13,7 +13,8 @@ from sqlalchemy import and_, func
 from datetime import date, datetime, timedelta
 from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer
-from .ml_model import prever_proxima_visita, treinar_modelo_ml, preparar_dados_para_ml
+import pywhatkit as kit
+from .ml_model import preparar_dados_para_ml, treinar_modelo_ml, prever_proxima_visita, segmentar_clientes_kmeans
 
 # Instância global do modelo de ML para ser acessível nas rotas
 modelo_ml_global = None
@@ -180,34 +181,6 @@ def agenda_data():
 
     return render_template("agenda_data.html", lista_agendamentos_data=lista_agendamentos_data, form_botao=form_botao)
 
-# @main.route("/relatorio", methods=["GET"])
-# @login_required
-# @admin_required
-# def relatorio():
-#     from collections import Counter
-
-#     hoje = date.today()
-#     sete_dias_atras = hoje - timedelta(days=6)
-
-#     inicio_str = request.args.get("inicio") or sete_dias_atras.strftime("%Y-%m-%d")
-#     fim_str = request.args.get("fim") or hoje.strftime("%Y-%m-%d")
-
-#     try:
-#         data_inicio = datetime.strptime(inicio_str, "%Y-%m-%d").date()
-#         data_fim = datetime.strptime(fim_str, "%Y-%m-%d").date()
-#     except:
-#         flash("Erro no formato da data.", "alert-danger")
-#         data_inicio = sete_dias_atras
-#         data_fim = hoje
-
-#     agendamentos = Post.query.filter(Post.data.between(data_inicio, data_fim)).all()
-#     contagem_por_dia = Counter([ag.data.strftime("%d/%m/%Y") for ag in agendamentos])
-
-#     datas_ordenadas = sorted(contagem_por_dia.items(), key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
-#     labels = [item[0] for item in datas_ordenadas]
-#     valores = [item[1] for item in datas_ordenadas]
-
-#     return render_template("relatorio.html", labels=labels, valores=valores, inicio=inicio_str, fim=fim_str)
 
 #novo relatório
 
@@ -257,6 +230,21 @@ def relatorio():
         inicio=inicio_str,
         fim=fim_str
     )
+
+@main.route("/segmentacao", methods=["GET"])
+@login_required
+@admin_required
+def segmentacao():
+    """Rota para exibir a segmentação de clientes."""
+    df_segmentos = segmentar_clientes_kmeans()
+    
+    if not df_segmentos.empty:
+        # Converte o DataFrame para um formato de dicionário para o Jinja
+        segmentos = df_segmentos.to_dict('records')
+        return render_template("segmentacao.html", segmentos=segmentos)
+    else:
+        flash("Não há dados suficientes para segmentar os clientes.", "alert-info")
+        return redirect(url_for("main.home"))
 
 @main.route("/agenda_hoje")
 @login_required

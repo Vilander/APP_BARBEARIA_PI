@@ -3,16 +3,15 @@ from datetime import datetime, timedelta
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
 
-try:
-    # Importações relativas, pois este arquivo está dentro do pacote App_Barbearia
-    from . import create_app, database
-    from .models import Post, Usuario
-except ImportError:
-    print("Erro: Este arquivo deve ser executado como um módulo.")
-    print("Por favor, execute o seguinte comando a partir da pasta raiz do seu projeto:")
-    print("python -m App_Barbearia.ml_model")
-    exit()
+# Importações relativas, pois este arquivo está dentro do pacote App_Barbearia
+from . import create_app, database
+from .models import Post, Usuario
 
 
 def preparar_dados_para_ml():
@@ -113,6 +112,76 @@ def prever_proxima_visita(model, id_usuario):
     return data_prevista.strftime('%d/%m/%Y')
 
 
+def segmentar_clientes_kmeans():
+    """
+    Realiza a segmentação de clientes usando o modelo K-means (Recência, Frequência, Valor Monetário).
+    """
+    # 🔹 1. Coleta e Prepara os Dados de RFM (Recência, Frequência, Valor Monetário)
+    
+    # Mapeamento de preços para os serviços
+    service_prices = {
+        'Corte de Cabelo': 40.0,
+        'Corte de Barba': 30.0,
+        'Serviço Completo': 60.0,
+    }
+
+    # Busca todos os agendamentos e os usuários
+    agendamentos = Post.query.all()
+    usuarios = Usuario.query.all()
+
+    # Estrutura para calcular as métricas RFM
+    df = pd.DataFrame(columns=['user_id', 'recency', 'frequency', 'monetary'])
+
+    for user in usuarios:
+        user_agendamentos = [ag for ag in agendamentos if ag.id_usuario == user.id]
+
+        if not user_agendamentos:
+            # Clientes sem agendamentos são considerados com Recência alta, Frequência e Valor 0
+            recency = (datetime.now().date() - user.data_criacao.date()).days if user.data_criacao else 0
+            frequency = 0
+            monetary = 0
+        else:
+            # Calcula a Recência (dias desde o último agendamento)
+            last_appointment = max(ag.data for ag in user_agendamentos)
+            recency = (datetime.now().date() - last_appointment).days
+
+            # Calcula a Frequência (número total de agendamentos)
+            frequency = len(user_agendamentos)
+
+            # Calcula o Valor Monetário (soma dos preços dos serviços)
+            monetary = sum(service_prices.get(ag.servico, 0) for ag in user_agendamentos)
+
+        # Adiciona a linha ao DataFrame
+        new_row = pd.DataFrame([{'user_id': user.id, 'recency': recency, 'frequency': frequency, 'monetary': monetary}])
+        df = pd.concat([df, new_row], ignore_index=True)
+    
+    if df.empty:
+        return pd.DataFrame() # Retorna um DataFrame vazio se não houver dados
+
+    # 🔹 2. Pré-processamento e Treinamento do Modelo K-means
+    
+    # Usa apenas as colunas numéricas para o clustering
+    X = df[['recency', 'frequency', 'monetary']]
+
+    # Padroniza os dados para que o K-means funcione melhor
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Aplica o modelo K-means com 3 clusters (pode ser ajustado)
+    kmeans = KMeans(n_clusters=3, random_state=42, n_init=10)
+    df['segment'] = kmeans.fit_predict(X_scaled)
+
+    # Mapeia os clusters para nomes mais descritivos
+    segment_map = {0: 'Alto Valor', 1: 'Intermediário', 2: 'Novo Cliente'}
+    df['segment_name'] = df['segment'].map(segment_map)
+    
+    # Adiciona o username para facilitar a visualização
+    user_names = {user.id: user.username for user in usuarios}
+    df['username'] = df['user_id'].map(user_names)
+
+    return df
+
+
 if __name__ == '__main__':
     # Este bloco permite que você teste o arquivo ml_model.py diretamente.
     # A maneira correta de executá-lo é a partir da pasta raiz do projeto:
@@ -121,20 +190,10 @@ if __name__ == '__main__':
     from . import create_app
     app = create_app()
     with app.app_context():
-        X, y = preparar_dados_para_ml()
-        if X is not None and y is not None:
-            modelo_treinado = treinar_modelo_ml(X, y)
-            
-            # Exemplo de como usar a previsão para um usuário com ID 1
-            # 💡 Altere o id_cliente_teste para o ID de um usuário existente
-            id_cliente_teste = 1 
-            data_sugerida = prever_proxima_visita(modelo_treinado, id_cliente_teste)
-            
-            if data_sugerida:
-                print(f"Modelo treinado com sucesso!")
-                print(f"Data sugerida para o usuário {id_cliente_teste}: {data_sugerida}")
-            else:
-                print("Não foi possível fazer uma previsão. Verifique se o usuário tem agendamentos suficientes.")
+        # Teste de segmentação de clientes
+        df_segmentos = segmentar_clientes_kmeans()
+        if not df_segmentos.empty:
+            print("Segmentação de clientes concluída com sucesso!")
+            print(df_segmentos[['username', 'recency', 'frequency', 'monetary', 'segment_name']])
         else:
-            print("Não foi possível treinar o modelo. Dados insuficientes.")
-
+            print("Não há dados suficientes para segmentar os clientes.")

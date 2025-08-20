@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+{% block body %}
+
+<div class="container mt-5 mb-5">
+    <div class="card-agendar p-4">
+        <h2 class="text-center mb-4">Segmentação de Clientes</h2>
+        
+        <p class="text-center text-muted">Abaixo estão os seus clientes agrupados por comportamento (Recência, Frequência, Valor Monetário).</p>
+        <p class="text-center text-muted">A análise se torna mais precisa com mais dados.</p>
+
+        <div class="table-responsive mt-4">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">ID do Cliente</th>
+                        <th scope="col">Nome do Cliente</th>
+                        <th scope="col">Segmento</th>
+                        <th scope="col">Recência (dias)</th>
+                        <th scope="col">Frequência (agendamentos)</th>
+                        <th scope="col">Valor Monetário (R$)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for segmento in segmentos %}
+                    <tr>
+                        <td>{{ segmento.user_id }}</td>
+                        <td>{{ segmento.username }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if segmento.segment_name == 'Alto Valor' %} bg-success 
+                                {% elif segmento.segment_name == 'Intermediário' %} bg-warning 
+                                {% elif segmento.segment_name == 'Novo Cliente' %} bg-info 
+                                {% else %} bg-secondary 
+                                {% endif %}">
+                                {{ segmento.segment_name }}
+                            </span>
+                        </td>
+                        <td>{{ "%.0f"|format(segmento.recency) }}</td>
+                        <td>{{ "%.0f"|format(segmento.frequency) }}</td>
+                        <td>R$ {{ "%.2f"|format(segmento.monetary) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
