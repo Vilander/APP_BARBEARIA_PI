@@ -12,14 +12,21 @@
 <body>
     <section class="hero">
         <div class="hero-content">
-            <h1>CorteFácil</h1>
-            <p>Sua barbearia conectada com estilo e agilidade</p>
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('main.agendar') }}" class="btn btn-custom">Agendar Agora</a>
-            {% else %}
-                <a href="{{ url_for('main.login') }}" class="btn btn-custom">Entrar ou Cadastrar</a>
-            {% endif %}
-        </div>
+    <h1>CorteFácil</h1>
+    <p>Sua barbearia conectada com estilo e agilidade</p>
+    {% if current_user.is_authenticated %}
+        {% if current_user.role == 'admin' %}
+            <!-- Botão para o Administrador -->
+            <a href="{{ url_for('main.agendar') }}" class="btn btn-custom">Iniciar</a>
+        {% else %}
+            <!-- Botão para o Usuário Comum -->
+            <a href="{{ url_for('main.agendar') }}" class="btn btn-custom">Agendar Serviço</a>
+        {% endif %}
+    {% else %}
+        <!-- Lógica para usuário não autenticado -->
+        <a href="{{ url_for('main.login') }}" class="btn btn-custom">Entrar ou Cadastrar</a>
+    {% endif %}
+</div>
     </section>
 
     <footer>
