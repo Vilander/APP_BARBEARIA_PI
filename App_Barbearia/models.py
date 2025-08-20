@@ -6,6 +6,7 @@ from flask_login import UserMixin
 from sqlalchemy import UniqueConstraint
 from itsdangerous import URLSafeTimedSerializer
 from flask import current_app
+from datetime import datetime
 
 @login_manager.user_loader
 def load_usuario(id_usuario):
@@ -47,6 +48,16 @@ class Usuario(database.Model, UserMixin):
             return None
         return Usuario.query.get(user_id)
 
+# 🟢 Novo modelo para armazenar os serviços e seus valores.
+class Servico(database.Model):
+    __tablename__ = 'servico'
+    id = database.Column(database.Integer, primary_key=True)
+    nome = database.Column(database.String(100), nullable=False, unique=True)
+    valor = database.Column(database.Float, nullable=False)
+    
+    def __repr__(self):
+        return f"Servico('{self.nome}', R${self.valor}')"
+
 class Post(database.Model):
     __tablename__ = 'post'
 
@@ -54,6 +65,12 @@ class Post(database.Model):
     username = database.Column(database.String, nullable=False)
     cell = database.Column(database.String, nullable=False)
     servico = database.Column(database.String, nullable=False)
+    # 🟢 Adicionado o campo 'valor' para registrar o preço no momento do agendamento
+    valor = database.Column(database.Float, nullable=False, default=0.0)
     hora = database.Column(database.String, nullable=False)
     data = database.Column(database.Date, nullable=False)
     id_usuario = database.Column(database.Integer, database.ForeignKey('usuario.id'), nullable=False)
+
+    def __repr__(self):
+        return f"Post('{self.username}', '{self.servico}', '{self.data}')"
+

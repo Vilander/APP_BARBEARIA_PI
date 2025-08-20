@@ -1,13 +1,27 @@
+# forms.py
+
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, TextAreaField, SelectField, DateField
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError, InputRequired, Regexp
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, DateField, IntegerField
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from App_Barbearia.models import Usuario, Post
 from flask_login import current_user
-from datetime import datetime
+from datetime import date, datetime
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
+from wtforms import StringField, FloatField, SubmitField
+from wtforms.validators import DataRequired
+
+# 🟢 Novo formulário para gerenciar serviços
+class Form_GerenciarServicos(FlaskForm):
+    nome_servico = StringField('Nome do Serviço', validators=[DataRequired()])
+    valor_servico = IntegerField('Valor do Serviço (R$)', validators=[DataRequired()])
+    botao_adicionar = SubmitField('Adicionar/Atualizar')
+
+# 🟢 Novo formulário para o relatório de lucro (consistente com o filtro de datas)
+class Form_RelatorioLucro(FlaskForm):
+    data_inicio = DateField('Data de Início', format='%Y-%m-%d', validators=[DataRequired()])
+    data_fim = DateField('Data de Fim', format='%Y-%m-%d', validators=[DataRequired()])
+    botao_submit = SubmitField('Filtrar')
 
 class FormCriarConta(FlaskForm):
     username = StringField('Nome de Usuário', validators=[DataRequired()])
@@ -27,8 +41,7 @@ class FormLogin(FlaskForm):
     lembrar_dados = BooleanField('Lembrar Dados de Acesso')
     botao_submit_login = SubmitField('Fazer Login')
 
-
-# validator par nao permetir inserção de data anterior a atual
+# 🟢 Mantido o seu validador personalizado 'DataFutura'
 class DataFutura(object):
     def __init__(self, message=None):
         if not message:
@@ -40,21 +53,18 @@ class DataFutura(object):
         if field.data < hoje:
             raise ValidationError(self.message)
 
-
 class Form_Agendar(FlaskForm):
-    lista_horas = [8, 9, 10, 11, 12, 14, 15, 16]
-
-    horarios_disponiveis = [(str(hora) + ':00', str(hora) + ':00') for hora in lista_horas]
-
+    # 🟢 As opções de serviço serão preenchidas dinamicamente na rota
     username = StringField('Nome', validators=[DataRequired()])
     cell = StringField("DD + Celular", validators=[DataRequired(), Length(11, 11)])
-    servico = SelectField('Serviço',
-                          choices=[('Corte de Cabelo', 'Corte de Cabelo'), ('Corte de Barba', 'Corte de Barba'),
-                                   ('Corte de Cabelo e Barba', 'Corte de Cabelo e Barba')], validators=[DataRequired()])
-    datar = DateField('Data/Hora:', validators=[DataRequired(),  DataFutura()])
-    hora = SelectField('Hora', choices=horarios_disponiveis, validators=[DataRequired()])
+    servico = SelectField('Serviço', validators=[DataRequired()])
+    datar = DateField('Data', validators=[DataRequired(), DataFutura()])
+    hora = SelectField('Hora', validators=[DataRequired()])
     botao_submit_agendar = SubmitField('Agendar')
 
+    # Você pode manter a lista de horas aqui ou preencher dinamicamente na rota
+    # Se quiser manter aqui, adicione a lógica para preencher o campo 'hora'
+    # Ex: self.hora.choices = [('8:00', '8:00'), ('9:00', '9:00'), ...]
 
 class Form_EditarPerfil(FlaskForm):
     username = StringField('Nome de Usuário', validators=[DataRequired()])
@@ -62,7 +72,6 @@ class Form_EditarPerfil(FlaskForm):
     foto_perfil = FileField('Atualizar Foto', validators=[FileAllowed(['jpg', 'png'])])
     botao_submit_editarperfil = SubmitField('Confirmar Edição')
 
-    # verifica se ja existe o email no bd, se sim exibe um erro no form
     def validate_email(self, email):
         if current_user.email != email.data:
             usuario = Usuario.query.filter_by(email=email.data).first()
@@ -70,10 +79,8 @@ class Form_EditarPerfil(FlaskForm):
                 raise ValidationError('Já existe um usuário com esse e-mail. Cadastre outro e-mail ou faça Login')
 
 class Form_Botao(FlaskForm):
-    # seus outros campos aqui
     data_pesquisa = DateField('Data de Pesquisa')
     botao_submit_agenda_data = SubmitField('Pesquisar Agendamentos')
-
 
 class FormRecuperarSenha(FlaskForm):
     email = StringField('E-mail', validators=[DataRequired(), Email()])
@@ -83,3 +90,9 @@ class FormRedefinirSenha(FlaskForm):
     senha = PasswordField('Nova Senha', validators=[DataRequired()])
     confirmacao_senha = PasswordField('Confirmar Nova Senha', validators=[DataRequired(), EqualTo('senha', message='As senhas devem ser iguais')])
     submit = SubmitField('Redefinir Senha')
+
+class Form_GerenciarServicos(FlaskForm):
+    nome_servico = StringField('Nome do Serviço', validators=[DataRequired()])
+    valor_servico = FloatField('Valor do Serviço', validators=[DataRequired()])
+    # 🟢 NOVO: Adicionando o campo de envio
+    submit = SubmitField('Adicionar/Atualizar Serviço')

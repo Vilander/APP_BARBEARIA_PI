@@ -2,147 +2,157 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 {% block body %}
 
-<!-- Adiciona a biblioteca Chart.js para criar o gráfico -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <div class="container mt-5 mb-5">
-    <div class="card-agendar p-4">
-        <h2 class="text-center mb-4">Relatório de Agendamentos</h2>
+  <div class="card-relatorio p-4">
+    <h2 class="text-center mb-4">Relatório de Agendamentos e Lucros</h2>
 
-        <!-- Formulário para filtrar por data -->
-        <form method="GET" action="{{ url_for('main.relatorio') }}" class="mb-4">
-            <div class="row">
-                <div class="col-md-5">
-                    <label for="inicio" class="form-label">Data de Início:</label>
-                    <input type="date" id="inicio" name="inicio" class="form-control" value="{{ inicio }}">
-                </div>
-                <div class="col-md-5">
-                    <label for="fim" class="form-label">Data de Fim:</label>
-                    <input type="date" id="fim" name="fim" class="form-control" value="{{ fim }}">
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-                </div>
-            </div>
-        </form>
-
-        <!-- Container para o gráfico de agendamentos por dia -->
-        <div class="row">
-            <div class="col-md-12">
-                <h3 class="text-center mt-4 mb-3">Agendamentos por Dia</h3>
-                <div class="chart-container" style="position: relative; height:40vh; width:100%">
-                    <canvas id="meuGraficoDeBarras"></canvas>
-                </div>
-            </div>
+    <form method="GET" class="mb-4">
+      <div class="row align-items-end justify-content-center">
+        <div class="col-md-3 mb-3">
+          <label for="data_inicio" class="form-label">Data de Início</label>
+          <input type="date" class="form-control" id="data_inicio" name="data_inicio" value="{{ data_inicio }}">
         </div>
-        
-        <!-- 🆕 Container para o novo gráfico de análise por serviço -->
-        <div class="row mt-5">
-            <div class="col-md-12">
-                <h3 class="text-center mt-4 mb-3">Agendamentos por Tipo de Serviço</h3>
-                <div class="chart-container d-flex justify-content-center" style="position: relative; height:40vh; width:100%">
-                    <canvas id="meuGraficoDeDonut"></canvas>
-                </div>
-            </div>
+        <div class="col-md-3 mb-3">
+          <label for="data_fim" class="form-label">Data de Fim</label>
+          <input type="date" class="form-control" id="data_fim" name="data_fim" value="{{ data_fim }}">
         </div>
+        <div class="col-md-2 mb-3">
+          <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+      </div>
+    </form>
 
+    <div class="text-center mb-4">
+      <h3 style="color: #4CAF50;">Lucro Total: R$ {{ total_valor_formatado }}</h3>
     </div>
+
+    <!-- Gráficos empilhados em telas pequenas e lado a lado em telas maiores -->
+    <div class="row mt-4">
+      <!-- Gráfico de Agendamentos por Dia -->
+      <div class="col-12 mb-4">
+        <div class="card card-grafico card-relatorio-graph p-3">
+          <h5 class="text-center mb-3">Número de Agendamentos</h5>
+          <canvas id="agendamentosChart" class="grafico"></canvas>
+        </div>
+      </div>
+
+      <!-- Gráfico de Tipo de Serviço -->
+      <div class="col-12 mb-4">
+        <div class="card card-grafico card-relatorio-graph p-3">
+          <h5 class="text-center mb-3">Tipos de Serviço</h5>
+          <canvas id="servicosChart" class="grafico"></canvas>
+        </div>
+      </div>
+
+      <!-- Novo Gráfico de Linha para Lucro -->
+      <div class="col-12 mb-4">
+        <div class="card card-grafico card-relatorio-graph p-3">
+          <h5 class="text-center mb-3">Lucro Diário</h5>
+          <canvas id="lucroChart" class="grafico"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Este é o bloco de script que gera o gráfico de barras usando Chart.js
-    const labels = {{ labels|tojson }};
-    const valores = {{ valores|tojson }};
-    const dataBar = {
-        labels: labels,
-        datasets: [{
-            label: 'Número de Agendamentos',
-            data: valores,
-            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
-    };
-    const configBar = {
-        type: 'bar',
-        data: dataBar,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Número de Agendamentos'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Data'
-                    }
-                }
-            },
-            plugins: {
-                legend: { display: true },
-                tooltip: {
-                    callbacks: {
-                        label: function(context) {
-                            let label = context.dataset.label || '';
-                            if (label) { label += ': '; }
-                            if (context.parsed.y !== null) { label += context.parsed.y; }
-                            return label;
-                        }
-                    }
-                }
-            }
-        },
-    };
-    const myChartBar = new Chart(document.getElementById('meuGraficoDeBarras'), configBar);
+  // Pega os dados do Flask
+  const dadosAgendamentos = JSON.parse('{{ dados_agendamentos | tojson }}');
+  const dadosServicos = JSON.parse('{{ dados_servicos | tojson }}');
+  const dadosLucroDiario = JSON.parse('{{ dados_lucro_diario | tojson }}');
 
-    // 🆕 Este é o novo bloco de script para o gráfico de donut
-    const serviceLabels = {{ service_labels|tojson }};
-    const serviceCounts = {{ service_counts|tojson }};
-    
-    // Define uma paleta de cores para o gráfico
-    const serviceColors = [
-        'rgba(255, 99, 132, 0.7)', // Rosa para o primeiro item
-        'rgba(54, 162, 235, 0.7)', // Azul para o segundo
-        'rgba(255, 206, 86, 0.7)', // Amarelo para o terceiro
-        'rgba(75, 192, 192, 0.7)', // Verde para o quarto
-        'rgba(153, 102, 255, 0.7)', // Roxo para o quinto
-        'rgba(255, 159, 64, 0.7)' // Laranja para o sexto
-    ];
-
-    const dataDonut = {
-        labels: serviceLabels, // Os rótulos dos serviços
-        datasets: [{
-            label: 'Total de Agendamentos',
-            data: serviceCounts, // As contagens de cada serviço
-            backgroundColor: serviceColors,
-            hoverOffset: 4
-        }]
-    };
-    const configDonut = {
-        type: 'doughnut',
-        data: dataDonut,
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: false,
-                    text: 'Agendamentos por Tipo de Serviço'
-                }
-            }
+  // Configuração do Gráfico de Agendamentos por Dia
+  const agendamentosCtx = document.getElementById('agendamentosChart').getContext('2d');
+  new Chart(agendamentosCtx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(dadosAgendamentos),
+      datasets: [{
+        label: 'Número de Agendamentos',
+        data: Object.values(dadosAgendamentos),
+        backgroundColor: '#6A994E',
+        borderColor: '#6A994E',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true
         }
-    };
-    const myChartDonut = new Chart(document.getElementById('meuGraficoDeDonut'), configDonut);
+      }
+    }
+  });
 
+  // Configuração do Gráfico de Tipo de Serviço
+  const servicosCtx = document.getElementById('servicosChart').getContext('2d');
+  const servicosLabels = Object.keys(dadosServicos);
+  const servicosData = Object.values(dadosServicos);
+
+  // Define cores de forma manual para manter a consistência
+  const cores = ['#36A2EB', '#FF6384', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40'];
+  const backgroundColors = servicosLabels.map((_, i) => cores[i % cores.length]);
+
+  new Chart(servicosCtx, {
+    type: 'doughnut',
+    data: {
+      labels: servicosLabels,
+      datasets: [{
+        label: 'Quantidade de Serviços',
+        data: servicosData,
+        backgroundColor: backgroundColors,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'top',
+        },
+        tooltip: {
+          callbacks: {
+            label: function(tooltipItem) {
+              const label = tooltipItem.label || '';
+              const value = tooltipItem.raw || 0;
+              const total = tooltipItem.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+              const percentage = ((value / total) * 100).toFixed(2);
+              return `${label}: ${value} (${percentage}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // Novo Gráfico de Lucro Diário
+  const lucroCtx = document.getElementById('lucroChart').getContext('2d');
+  new Chart(lucroCtx, {
+    type: 'line',
+    data: {
+      labels: Object.keys(dadosLucroDiario),
+      datasets: [{
+        label: 'Lucro Diário (R$)',
+        data: Object.values(dadosLucroDiario),
+        fill: true,
+        borderColor: '#007BFF',
+        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+        tension: 0.1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
 </script>
-
-{% endblock %}
+{% endblock body %}

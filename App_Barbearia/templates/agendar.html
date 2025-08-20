@@ -1,12 +1,11 @@
 {% extends 'base.html' %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 {% block body %}
-
 
 <div class="container mt-5 mb-5">
   <div class="card-agendar">
     <h2 class="text-center mb-4">Agende seu Horário</h2>
 
+    <!-- Exibe a sugestão do modelo de ML se estiver disponível -->
     {% if data_sugerida %}
     <div class="alert alert-info" role="alert">
       <p><strong>Sugestão para você!</strong></p>
@@ -15,26 +14,62 @@
       <p>O que você acha? Podemos agendar para você!</p>
     </div>
     {% endif %}
+    <!-- Fim do bloco de sugestão -->
 
+    <!-- Botão para alternar a visibilidade da tabela de serviços -->
+    <div class="text-center mb-3">
+        <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#tabelaServicosCollapse" aria-expanded="false" aria-controls="tabelaServicosCollapse">
+          Ver Serviços e Valores
+        </button>
+    </div>
+
+    <!-- Tabela de serviços e valores oculta por padrão -->
+    <div class="collapse" id="tabelaServicosCollapse">
+      <h3 class="text-center mt-4 mb-3">Nossos Serviços e Valores</h3>
+      <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+          <tr>
+            <th scope="col">Serviço</th>
+            <th scope="col">Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for servico in servicos %}
+          <tr>
+            <td>{{ servico.nome }}</td>
+            <td>R$ {{ "%.2f"|format(servico.valor) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <!-- Fim da tabela de serviços -->
+
+    <!-- Formulário de agendamento -->
     <form method="POST">
       {{ form_agendar.csrf_token }}
       <div class="row">
+        <!-- Nome de usuário -->
         <div class="col-md-6 mb-3">
           {{ form_agendar.username.label(class="form-label") }}
           {{ form_agendar.username(class="form-control", placeholder="Seu nome") }}
         </div>
+        <!-- Celular -->
         <div class="col-md-6 mb-3">
           {{ form_agendar.cell.label(class="form-label") }}
           {{ form_agendar.cell(class="form-control", placeholder="DDD + Celular") }}
         </div>
+        <!-- Serviço (agora populado dinamicamente) -->
         <div class="col-md-6 mb-3">
           {{ form_agendar.servico.label(class="form-label") }}
           {{ form_agendar.servico(class="form-control") }}
         </div>
+        <!-- Data -->
         <div class="col-md-3 mb-3">
           {{ form_agendar.datar.label(class="form-label") }}
           {{ form_agendar.datar(class="form-control") }}
         </div>
+        <!-- Hora -->
         <div class="col-md-3 mb-3">
           {{ form_agendar.hora.label(class="form-label") }}
           {{ form_agendar.hora(class="form-control") }}

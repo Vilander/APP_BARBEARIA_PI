@@ -2,9 +2,9 @@
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from App_Barbearia import database, bcrypt, mail, create_app
-from App_Barbearia.forms import FormLogin, FormCriarConta, Form_Agendar, Form_EditarPerfil, Form_Botao, FormRecuperarSenha, FormRedefinirSenha
+from App_Barbearia.forms import FormLogin, FormCriarConta, Form_Agendar, Form_EditarPerfil, Form_Botao, FormRecuperarSenha, FormRedefinirSenha, Form_GerenciarServicos, Form_RelatorioLucro
 from App_Barbearia.decorators import admin_required
-from App_Barbearia.models import Usuario, Post
+from App_Barbearia.models import Usuario, Post, Servico
 from flask_login import login_user, logout_user, current_user, login_required
 import secrets
 import os
@@ -126,6 +126,17 @@ def editar_perfil():
 def agendar():
     form_agendar = Form_Agendar()
     
+    from App_Barbearia.models import Servico
+    # Popula dinamicamente as opções de serviço do banco de dados
+    servicos = Servico.query.all()
+    
+    # 🟢 CORREÇÃO AQUI: O primeiro elemento da tupla deve ser o ID (s.id) e não o nome.
+    form_agendar.servico.choices = [(s.id, f"{s.nome} - R$ {s.valor}") for s in servicos]
+
+    # Popula dinamicamente os horários (opcional, mas recomendado)
+    lista_horas = [8, 9, 10, 11, 12, 14, 15, 16]
+    form_agendar.hora.choices = [(f"{h}:00", f"{h}:00") for h in lista_horas]
+
     # Adiciona a previsão na página de agendamento se o modelo estiver disponível
     data_sugerida = None
     if modelo_ml_global:
@@ -142,10 +153,18 @@ def agendar():
         if agendamento_existente:
             flash("Já existe um agendamento para essa data e hora.", "alert-danger")
         else:
+            # 🟢 CORREÇÃO AQUI: Use o ID para buscar o serviço
+            servico_escolhido = Servico.query.get(form_agendar.servico.data)
+            valor_servico = servico_escolhido.valor if servico_escolhido else 0.0
+
+            # 🟢 CORREÇÃO AQUI: Atribua o nome do serviço para o campo 'servico' do post
+            nome_servico = servico_escolhido.nome if servico_escolhido else ""
+
             post = Post(
                 username=form_agendar.username.data,
                 cell=form_agendar.cell.data,
-                servico=form_agendar.servico.data,
+                servico=nome_servico, # Atribui o nome do serviço ao post
+                valor=valor_servico, # Atribui o valor do serviço ao post
                 data=form_agendar.datar.data,
                 hora=form_agendar.hora.data,
                 id_usuario=current_user.id,
@@ -157,14 +176,14 @@ def agendar():
             # 🟢 Chamada para a função de envio de e-mail.
             enviar_email_confirmacao(current_user.email, post)
             
-            # 🟢 Sugestão: Você pode redirecionar para uma página de sucesso
-            # return redirect(url_for('main.alguma_pagina_de_sucesso'))
-
-            return render_template("agendar.html", form_agendar=form_agendar)
+            return redirect(url_for("main.agendar"))
     else:
         print(form_agendar.errors)
 
-    return render_template("agendar.html", form_agendar=form_agendar, data_sugerida=data_sugerida)
+    return render_template("agendar.html", 
+                           form_agendar=form_agendar, 
+                           data_sugerida=data_sugerida, 
+                           servicos=servicos)
 
 
 @main.route("/agenda_data", methods=["GET", "POST"])
@@ -181,54 +200,107 @@ def agenda_data():
 
     return render_template("agenda_data.html", lista_agendamentos_data=lista_agendamentos_data, form_botao=form_botao)
 
+#  Rota para gerenciar os serviços (CRUD)
+@main.route("/gerenciar_servicos", methods=["GET", "POST"])
+@login_required
+@admin_required
+def gerenciar_servicos():
+    form_servico = Form_GerenciarServicos()
+    servicos = Servico.query.order_by(Servico.id).all()
+    
+    if form_servico.validate_on_submit():
+        nome = form_servico.nome_servico.data
+        valor = form_servico.valor_servico.data
+        
+        servico_existente = Servico.query.filter_by(nome=nome).first()
+        if servico_existente:
+            # Atualiza o serviço existente
+            servico_existente.valor = valor
+            flash(f"Serviço '{nome}' atualizado com sucesso!", "alert-success")
+        else:
+            # Adiciona um novo serviço
+            novo_servico = Servico(nome=nome, valor=valor)
+            database.session.add(novo_servico)
+            flash(f"Serviço '{nome}' adicionado com sucesso!", "alert-success")
+        
+        database.session.commit()
+        return redirect(url_for("main.gerenciar_servicos"))
+        
+    return render_template("gerenciar_servicos.html", form_servico=form_servico, servicos=servicos)
+
+# 🟢 Rota para excluir um serviço
+@main.route("/excluir_servico/<int:id>", methods=["POST"])
+@login_required
+@admin_required
+def excluir_servico(id):
+    servico = Servico.query.get_or_404(id)
+    database.session.delete(servico)
+    database.session.commit()
+    flash("Serviço excluído com sucesso!", "alert-success")
+    return redirect(url_for("main.gerenciar_servicos"))
 
 #novo relatório
 
-@main.route("/relatorio", methods=["GET"])
+@main.route("/relatorio", methods=["GET", "POST"])
 @login_required
 @admin_required
 def relatorio():
-    hoje = date.today()
-    sete_dias_atras = hoje - timedelta(days=7)
-    
-    # Obtém as datas do filtro ou usa o período padrão
-    inicio_str = request.args.get("inicio") or sete_dias_atras.strftime("%Y-%m-%d")
-    fim_str = request.args.get("fim") or hoje.strftime("%Y-%m-%d")
+    from collections import Counter
+    # 🔹 Obter as datas do filtro
+    data_inicio = request.args.get('data_inicio')
+    data_fim = request.args.get('data_fim')
 
-    try:
-        data_inicio = datetime.strptime(inicio_str, "%Y-%m-%d").date()
-        data_fim = datetime.strptime(fim_str, "%Y-%m-%d").date()
-    except:
-        flash("Erro no formato da data.", "alert-danger")
-        data_inicio = sete_dias_atras
-        data_fim = hoje
+    # 🔹 Define um período padrão se as datas não foram fornecidas
+    if not data_inicio or not data_fim:
+        hoje = date.today()
+        # Define a data de início como 30 dias atrás
+        data_inicio = (hoje - timedelta(days=30)).strftime('%Y-%m-%d')
+        # Define a data de fim como hoje
+        data_fim = hoje.strftime('%Y-%m-%d')
+
+    # Converte as strings de data para objetos date
+    data_inicio_obj = datetime.strptime(data_inicio, '%Y-%m-%d').date()
+    data_fim_obj = datetime.strptime(data_fim, '%Y-%m-%d').date()
+
+    # 🔹 Consulta para todos os agendamentos no período
+    agendamentos = Post.query.filter(Post.data.between(data_inicio_obj, data_fim_obj)).all()
 
     # Lógica para o primeiro gráfico (Agendamentos por Dia)
-    agendamentos_por_dia = Post.query.filter(Post.data.between(data_inicio, data_fim)).all()
-    from collections import Counter
-    contagem_por_dia = Counter([ag.data.strftime("%d/%m/%Y") for ag in agendamentos_por_dia])
-    datas_ordenadas = sorted(contagem_por_dia.items(), key=lambda x: datetime.strptime(x[0], "%d/%m/%Y"))
-    labels = [item[0] for item in datas_ordenadas]
-    valores = [item[1] for item in datas_ordenadas]
+    contagem_por_dia = Counter([ag.data.strftime("%Y-%m-%d") for ag in agendamentos])
+    # Cria uma lista de todas as datas no período para garantir a ordem e preencher dias sem agendamentos
+    all_dates = [data_inicio_obj + timedelta(days=x) for x in range((data_fim_obj - data_inicio_obj).days + 1)]
+    dados_agendamentos = {d.strftime("%d/%m/%Y"): contagem_por_dia.get(d.strftime("%Y-%m-%d"), 0) for d in all_dates}
 
-    # 🆕 Lógica para o segundo gráfico (Análise por Serviço)
-    # 🔹 Consulta o banco de dados para obter a contagem de agendamentos por tipo de serviço
+
+    # Lógica para o segundo gráfico (Análise por Serviço)
     contagem_servicos = database.session.query(Post.servico, func.count(Post.id)).filter(
-        Post.data.between(data_inicio, data_fim)
+        Post.data.between(data_inicio_obj, data_fim_obj)
     ).group_by(Post.servico).all()
+    dados_servicos = dict(contagem_servicos)
 
-    # 🔹 Prepara os dados para o gráfico de donut
-    service_labels = [item[0] for item in contagem_servicos]
-    service_counts = [item[1] for item in contagem_servicos]
+    # Lógica para o terceiro gráfico (Lucro Diário)
+    # 🆕 Consulta o banco de dados para obter a soma do valor por dia
+    lucro_por_dia = database.session.query(Post.data, func.sum(Post.valor)).filter(
+        Post.data.between(data_inicio_obj, data_fim_obj)
+    ).group_by(Post.data).order_by(Post.data).all()
+    
+    # 🆕 Prepara os dados para o gráfico de linha, preenchendo os dias sem lucro com zero
+    dados_lucro_diario = {d.strftime("%d/%m/%Y"): 0.0 for d in all_dates}
+    for data, valor in lucro_por_dia:
+        dados_lucro_diario[data.strftime("%d/%m/%Y")] = float(valor)
+
+    # Calcula o lucro total para o período filtrado
+    lucro_total = sum(dados_lucro_diario.values())
+    total_valor_formatado = f"{lucro_total:,.2f}".replace('.', ',')
 
     return render_template(
         "relatorio.html",
-        labels=labels,
-        valores=valores,
-        service_labels=service_labels, # Envia os rótulos de serviço para o template
-        service_counts=service_counts, # Envia as contagens de serviço para o template
-        inicio=inicio_str,
-        fim=fim_str
+        dados_agendamentos=dados_agendamentos,
+        dados_servicos=dados_servicos,
+        dados_lucro_diario=dados_lucro_diario,
+        total_valor_formatado=total_valor_formatado,
+        data_inicio=data_inicio,
+        data_fim=data_fim
     )
 
 @main.route("/segmentacao", methods=["GET"])

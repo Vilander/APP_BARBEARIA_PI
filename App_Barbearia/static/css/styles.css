@@ -60,6 +60,13 @@ body {
     animation: fadeIn 1s ease-in-out;
 }
 
+.card-grafico {
+    max-width: 100% !important; 
+    height: 40vh;
+    display: flex;
+    justify-content: center;
+}
+
 .card-login {
     background-color: var(--color-bg-card);
     border-radius: var(--radius-card);
@@ -75,6 +82,9 @@ body {
     width: 100%;
 }
 
+.grafico{
+    position: absolute;
+}
 /* Labels */
 label,
 .form-label,
@@ -341,9 +351,9 @@ footer {
     margin-top: 1rem;
 }
 
-.recuperar-senha a:hover{
+.recuperar-senha a:hover {
     scale: 1.1;
-    color: var(--color-bg-primary) ;
+    color: var(--color-bg-primary);
 }
 
 /* Animações */
