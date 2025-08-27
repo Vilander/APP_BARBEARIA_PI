@@ -202,7 +202,7 @@ def agenda_data():
 
     return render_template("agenda_data.html", lista_agendamentos_data=lista_agendamentos_data, form_botao=form_botao)
 
-#  Rota para gerenciar os serviços (CRUD)
+# Rota para gerenciar os serviços (CRUD)
 @main.route("/gerenciar_servicos", methods=["GET", "POST"])
 @login_required
 @admin_required
@@ -363,10 +363,39 @@ def recuperar_senha():
             flash("E-mail não encontrado.", "alert-danger")
     return render_template("recuperar_senha.html", form_recuperar=form_recuperar)
 
+# 🟢 Rota para redefinição de senha
 @main.route("/redefinir_senha/<token>", methods=["GET", "POST"])
 def redefinir_senha(token):
+    # Se o usuário já está logado, ele não precisa redefinir a senha
     if current_user.is_authenticated:
         return redirect(url_for('main.home'))
+
+    # Verifica se o token é válido para um usuário
+    user = Usuario.verify_reset_token(token)
+    if user is None:
+        flash('Token de redefinição de senha inválido ou expirado.', 'danger')
+        return redirect(url_for('main.recuperar_senha'))
+
+    # Cria o formulário de redefinição de senha
+    form_redefinir = FormRedefinirSenha()
+    
+    # Se o formulário for submetido
+    if form_redefinir.validate_on_submit():
+        if form_redefinir.senha.data != form_redefinir.confirmar_senha.data:
+            flash('As senhas não coincidem.', 'danger')
+            return render_template('redefinir_senha.html', form_redefinir=form_redefinir, token=token)
+
+        # Hash da nova senha e atualização no banco de dados
+        senha_crypt = bcrypt.generate_password_hash(form_redefinir.senha.data)
+        user.senha = senha_crypt
+        database.session.commit()
+        
+        flash('Sua senha foi atualizada com sucesso!', 'success')
+        return redirect(url_for('main.login'))
+
+    # Se a requisição for GET, apenas exibe o formulário
+    return render_template("redefinir_senha.html", form_redefinir=form_redefinir, token=token)
+
 
 @main.route("/usuarios")
 @login_required
