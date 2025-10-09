@@ -1,2 +1,46 @@
 usuario:admin@cortefacil.com.br
 senha: admin1234
+
+🧭 1️=> Acesse a pasta do projeto
+
+No terminal (VSCode, PowerShell ou outro), navegue até o diretório raiz do projeto Flask, onde está o arquivo:
+
+cd caminho/para/sua/pasta
+
+
+Por exemplo:
+
+cd C:\Projetos\App_Barbearia
+
+⚙️ 2️=> Ative o ambiente virtual (se você usa um)
+
+Windows:
+
+venv\Scripts\activate
+
+
+Linux/Mac:
+
+source venv/bin/activate
+
+🚀 3️=>Execute o script
+
+Agora basta rodar o comando:
+
+python set_admin.py
+
+
+O script vai te pedir o e-mail do usuário que deseja tornar admin:
+
+Digite o email do usuário para torná-lo admin:
+
+
+➡️ Digite o e-mail exatamente como está salvo no banco de dados.
+Se o usuário existir, você verá:
+
+O usuário joao@example.com agora é um administrador!
+
+✅ 4️=>Pronto
+
+O campo role do usuário será atualizado para 'admin' no banco de dados.
+Depois disso, o sistema Flask poderá reconhecer esse usuário como administrador nas rotas protegidas.
