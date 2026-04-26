@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+{% block body %}
+
+<div class="container mt-5 mb-5">
+  <div class="card-relatorio p-4">
+    <h2 class="text-center mb-4">Relatório de Avaliações dos Clientes</h2>
+
+    <div class="row mb-4">
+      <div class="col-md-6">
+        <div class="card text-center p-3" style="background-color: #f0f0f0; border-radius: 8px;">
+          <h5>Total de Avaliações</h5>
+          <p style="font-size: 2rem; color: #4CAF50; font-weight: bold;">{{ total_avaliacoes }}</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card text-center p-3" style="background-color: #f0f0f0; border-radius: 8px;">
+          <h5>Média Geral</h5>
+          <p style="font-size: 2rem; color: #007BFF; font-weight: bold;">{{ media_geral }}/5 ⭐</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico de Média de Avaliações por Serviço -->
+    <div class="card card-grafico card-relatorio-graph p-4 mb-4">
+      <h5 class="text-center mb-3">Avaliação Média por Serviço</h5>
+      <canvas id="avaliacaoChart" style="min-height: 300px;"></canvas>
+    </div>
+
+    <!-- Tabela Detalhada -->
+    <div class="card p-4">
+      <h5 class="mb-3">Detalhes por Serviço</h5>
+      <div class="table-responsive">
+        <table class="table table-striped table-hover">
+          <thead class="table-dark">
+            <tr>
+              <th>Serviço</th>
+              <th>Média de Avaliação</th>
+              <th>Quantidade de Avaliações</th>
+              <th>Classificação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for servico, media in media_avaliacoes.items() %}
+            <tr>
+              <td>{{ servico }}</td>
+              <td>
+                <strong style="color: 
+                  {% if media >= 4.5 %}#4CAF50
+                  {% elif media >= 3.5 %}#FFC107
+                  {% else %}#FF6B6B
+                  {% endif %}
+                ">
+                  {{ media }} / 5.0 {% if media >= 4.5 %}⭐⭐⭐⭐⭐{% elif media >= 3.5 %}⭐⭐⭐⭐{% elif media >= 2.5 %}⭐⭐⭐{% else %}⭐⭐{% endif %}
+                </strong>
+              </td>
+              <td><badge class="badge bg-primary">{{ contagem_avaliacoes[servico] }}</badge></td>
+              <td>
+                {% if media >= 4.5 %}
+                <span class="badge bg-success">Excelente</span>
+                {% elif media >= 3.5 %}
+                <span class="badge bg-warning">Bom</span>
+                {% elif media >= 2.5 %}
+                <span class="badge bg-info">Regular</span>
+                {% else %}
+                <span class="badge bg-danger">Precisa Melhorar</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Dados do Flask
+  const mediaAvaliacoes = JSON.parse('{{ media_avaliacoes | tojson }}');
+
+  // Gráfico de Avaliações por Serviço
+  const avaliacaoCtx = document.getElementById('avaliacaoChart').getContext('2d');
+  
+  // Define cores baseadas na média
+  const backgroundColors = Object.values(mediaAvaliacoes).map(media => {
+    if (media >= 4.5) return '#4CAF50'; // Verde - Excelente
+    if (media >= 3.5) return '#FFC107'; // Amarelo - Bom
+    if (media >= 2.5) return '#FF9800'; // Laranja - Regular
+    return '#FF6B6B'; // Vermelho - Precisa melhorar
+  });
+
+  new Chart(avaliacaoCtx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(mediaAvaliacoes),
+      datasets: [{
+        label: 'Média de Avaliação (0-5)',
+        data: Object.values(mediaAvaliacoes),
+        backgroundColor: backgroundColors,
+        borderColor: backgroundColors,
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      indexAxis: 'x',
+      scales: {
+        y: {
+          beginAtZero: true,
+          max: 5,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top'
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return 'Média: ' + context.raw.toFixed(2) + ' / 5.0';
+            }
+          }
+        }
+      }
+    }
+  });
+</script>
+
+{% endblock %}

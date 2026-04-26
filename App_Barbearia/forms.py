@@ -66,6 +66,15 @@ class Form_Agendar(FlaskForm):
     # Se quiser manter aqui, adicione a lógica para preencher o campo 'hora'
     # Ex: self.hora.choices = [('8:00', '8:00'), ('9:00', '9:00'), ...]
 
+class Form_Avaliar(FlaskForm):
+    nota = SelectField(
+        'Avaliação do Atendimento',
+        choices=[(i, str(i)) for i in range(6)],
+        coerce=int,
+        validators=[DataRequired()]
+    )
+    botao_submit_avaliar = SubmitField('Enviar Avaliação')
+
 class Form_EditarPerfil(FlaskForm):
     username = StringField('Nome de Usuário', validators=[DataRequired()])
     email = StringField('E-mail', validators=[DataRequired(), Email()])

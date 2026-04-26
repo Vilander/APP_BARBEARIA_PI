@@ -2,7 +2,7 @@
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from App_Barbearia import database, bcrypt, mail, create_app
-from App_Barbearia.forms import FormLogin, FormCriarConta, Form_Agendar, Form_EditarPerfil, Form_Botao, FormRecuperarSenha, FormRedefinirSenha, Form_GerenciarServicos, Form_RelatorioLucro
+from App_Barbearia.forms import FormLogin, FormCriarConta, Form_Agendar, Form_Avaliar, Form_EditarPerfil, Form_Botao, FormRecuperarSenha, FormRedefinirSenha, Form_GerenciarServicos, Form_RelatorioLucro
 from App_Barbearia.decorators import admin_required
 from App_Barbearia.models import Usuario, Post, Servico
 from flask_login import login_user, logout_user, current_user, login_required
@@ -202,6 +202,27 @@ def agenda_data():
 
     return render_template("agenda_data.html", lista_agendamentos_data=lista_agendamentos_data, form_botao=form_botao)
 
+@main.route("/avaliar_agendamento/<int:id>", methods=["GET", "POST"])
+@login_required
+def avaliar_agendamento(id):
+    agendamento = Post.query.get_or_404(id)
+    if current_user.id != agendamento.id_usuario and current_user.role != 'admin':
+        abort(403)
+
+    form_avaliar = Form_Avaliar()
+    if form_avaliar.validate_on_submit():
+        agendamento.avaliacao = form_avaliar.nota.data
+        database.session.commit()
+        flash('Avaliação salva com sucesso!', 'alert-success')
+        if current_user.role == 'admin':
+            return redirect(url_for('main.agenda_data'))
+        return redirect(url_for('main.meus_agendamentos'))
+
+    if request.method == 'GET' and agendamento.avaliacao is not None:
+        form_avaliar.nota.data = agendamento.avaliacao
+
+    return render_template('avaliar.html', form_avaliar=form_avaliar, agendamento=agendamento)
+
 # Rota para gerenciar os serviços (CRUD)
 @main.route("/gerenciar_servicos", methods=["GET", "POST"])
 @login_required
@@ -305,6 +326,48 @@ def relatorio():
         data_fim=data_fim
     )
 
+@main.route("/relatorio_avaliacoes", methods=["GET"])
+@login_required
+@admin_required
+def relatorio_avaliacoes():
+    """Rota para exibir relatório de avaliações dos clientes por serviço."""
+    
+    # Busca todos os agendamentos com avaliações
+    agendamentos_com_avaliacao = Post.query.filter(Post.avaliacao.isnot(None)).all()
+    
+    # Calcula a média de avaliações por serviço
+    dados_avaliacoes = {}
+    contagem_avaliacoes = {}
+    
+    for agendamento in agendamentos_com_avaliacao:
+        servico = agendamento.servico
+        if servico not in dados_avaliacoes:
+            dados_avaliacoes[servico] = 0
+            contagem_avaliacoes[servico] = 0
+        
+        dados_avaliacoes[servico] += agendamento.avaliacao
+        contagem_avaliacoes[servico] += 1
+    
+    # Calcula a média
+    media_avaliacoes = {}
+    for servico in dados_avaliacoes:
+        media_avaliacoes[servico] = round(dados_avaliacoes[servico] / contagem_avaliacoes[servico], 2)
+    
+    # Dados para o gráfico (ordenado por média)
+    media_avaliacoes_ordenado = dict(sorted(media_avaliacoes.items(), key=lambda x: x[1], reverse=True))
+    
+    # Estatísticas gerais
+    total_avaliacoes = len(agendamentos_com_avaliacao)
+    media_geral = round(sum(ag.avaliacao for ag in agendamentos_com_avaliacao) / total_avaliacoes, 2) if total_avaliacoes > 0 else 0
+    
+    return render_template(
+        "relatorio_avaliacoes.html",
+        media_avaliacoes=media_avaliacoes_ordenado,
+        contagem_avaliacoes=contagem_avaliacoes,
+        total_avaliacoes=total_avaliacoes,
+        media_geral=media_geral
+    )
+
 @main.route("/segmentacao", methods=["GET"])
 @login_required
 @admin_required
@@ -326,6 +389,12 @@ def segmentacao():
 def agenda_hoje():
     agendamentos_dia = Post.query.filter_by(data=date.today()).order_by(Post.hora).all()
     return render_template("agenda_hoje.html", agendamentos_dia=agendamentos_dia)
+
+@main.route("/meus_agendamentos")
+@login_required
+def meus_agendamentos():
+    agendamentos = Post.query.filter_by(id_usuario=current_user.id).order_by(Post.data.desc(), Post.hora.desc()).all()
+    return render_template("meus_agendamentos.html", agendamentos=agendamentos)
 
 @main.route("/excluir_agendamento/<int:id>", methods=["POST"])
 @login_required
@@ -381,7 +450,7 @@ def redefinir_senha(token):
     
     # Se o formulário for submetido
     if form_redefinir.validate_on_submit():
-        if form_redefinir.senha.data != form_redefinir.confirmar_senha.data:
+        if form_redefinir.senha.data != form_redefinir.confirmacao_senha.data:
             flash('As senhas não coincidem.', 'danger')
             return render_template('redefinir_senha.html', form_redefinir=form_redefinir, token=token)
 

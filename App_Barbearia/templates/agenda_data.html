@@ -27,6 +27,16 @@
                 <p><strong>Serviço:</strong> {{ agendamento.servico }}</p>
                 <p><strong>Data:</strong> {{ agendamento.data }}</p>
                 <p><strong>Hora:</strong> {{ agendamento.hora }}</p>
+                <p><strong>Avaliação:</strong> {{ agendamento.avaliacao if agendamento.avaliacao is not none else 'Ainda não avaliado' }}</p>
+                <p><strong>Lembretes:</strong><br/>
+                  24h: {{ 'Sim ✓' if agendamento.lembrete_24h_enviado else 'Não' }} | 
+                  2h: {{ 'Sim ✓' if agendamento.lembrete_2h_enviado else 'Não' }} | 
+                  1h: {{ 'Sim ✓' if agendamento.lembrete_1h_enviado else 'Não' }} | 
+                  30min: {{ 'Sim ✓' if agendamento.lembrete_30min_enviado else 'Não' }}
+                </p>
+                {% if agendamento.avaliacao is none %}
+                    <a href="{{ url_for('main.avaliar_agendamento', id=agendamento.id) }}" class="btn btn-primary btn-sm">Avaliar</a>
+                {% endif %}
             </li>
             {% endfor %}
         </ul>

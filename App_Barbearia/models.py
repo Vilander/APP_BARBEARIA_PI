@@ -70,6 +70,11 @@ class Post(database.Model):
     hora = database.Column(database.String, nullable=False)
     data = database.Column(database.Date, nullable=False)
     id_usuario = database.Column(database.Integer, database.ForeignKey('usuario.id'), nullable=False)
+    avaliacao = database.Column(database.Integer, nullable=True, default=None)
+    lembrete_24h_enviado = database.Column(database.Boolean, nullable=False, default=False)
+    lembrete_2h_enviado = database.Column(database.Boolean, nullable=False, default=False)
+    lembrete_1h_enviado = database.Column(database.Boolean, nullable=False, default=False)
+    lembrete_30min_enviado = database.Column(database.Boolean, nullable=False, default=False)
 
     def __repr__(self):
         return f"Post('{self.username}', '{self.servico}', '{self.data}')"

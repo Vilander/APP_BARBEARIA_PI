@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block body %}
+<div class="container mt-5 mb-5">
+  <div class="card-agendar p-4">
+    <h2 class="text-center mb-4">Avaliar Atendimento</h2>
+    <p><strong>Cliente:</strong> {{ agendamento.username }}</p>
+    <p><strong>Serviço:</strong> {{ agendamento.servico }}</p>
+    <p><strong>Data:</strong> {{ agendamento.data.strftime('%d/%m/%Y') }}</p>
+    <p><strong>Hora:</strong> {{ agendamento.hora }}</p>
+    <form method="POST">
+      {{ form_avaliar.csrf_token }}
+      <div class="mb-3">
+        {{ form_avaliar.nota.label(class="form-label") }}
+        {{ form_avaliar.nota(class="form-select") }}
+      </div>
+      <div class="d-flex gap-2">
+        {{ form_avaliar.botao_submit_avaliar(class="btn btn-agendar") }}
+        <a href="{{ url_for('main.agenda_data') }}" class="btn btn-secondary">Voltar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
