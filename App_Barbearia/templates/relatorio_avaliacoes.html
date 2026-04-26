@@ -1,7 +1,39 @@
 {% extends 'base.html' %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 {% block body %}
+<style>
 
+  .card-avaliacao{
+    display: flex;
+    margin: 10px;
+    height: 100vh;
+    padding: 30px !important;
+    align-items: center;  
+  }
+
+  .md-avaliacao-txt {
+    color: #fff;
+  }
+
+  #avaliacaoChart{
+    width: 100% !important;
+  }
+
+  .card-tb-detalhada{
+    width: unset;
+  }
+
+  .card-tb-detalhada{
+    display: grid;
+    padding: 50px;
+    grid-auto-flow: row;
+    justify-items: center;
+    border: 1px solid #44444452;
+    border-radius: 15px;
+    box-shadow: 2px 1px 7px 4px #0d0d0d69;
+  }
+
+</style>
 <div class="container mt-5 mb-5">
   <div class="card-relatorio p-4">
     <h2 class="text-center mb-4">Relatório de Avaliações dos Clientes</h2>
@@ -22,14 +54,14 @@
     </div>
 
     <!-- Gráfico de Média de Avaliações por Serviço -->
-    <div class="card card-grafico card-relatorio-graph p-4 mb-4">
-      <h5 class="text-center mb-3">Avaliação Média por Serviço</h5>
+    <div class="card card-avaliacao card-grafico card-relatorio-graph p-4 mb-4">
+      <h5 class="text-center mb-3 md-avaliacao-txt">Avaliação Média por Serviço</h5>
       <canvas id="avaliacaoChart" style="min-height: 300px;"></canvas>
     </div>
 
     <!-- Tabela Detalhada -->
-    <div class="card p-4">
-      <h5 class="mb-3">Detalhes por Serviço</h5>
+    <div class="card-tb-detalhada">
+      <h5 class="mb-3" style="color:#fff">Detalhes por Serviço</h5>
       <div class="table-responsive">
         <table class="table table-striped table-hover">
           <thead class="table-dark">
