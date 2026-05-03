@@ -1,88 +1,126 @@
 # APP_BARBEARIA
 
----
+# APP_BARBEARIA
 
-## 1. Visão Geral
-
-**APP_BARBEARIA** é uma aplicação web desenvolvida com Flask, projetada para gerenciar as operações de uma barbearia moderna.  
-
-A plataforma permite que clientes criem contas, agendem serviços e gerenciem seus perfis pessoais.  
-
-Administradores têm acesso a um painel completo que inclui:  
-- Visualização da agenda diária.  
-- Consulta de agendamentos por data.  
-- Gerenciamento dos serviços oferecidos (CRUD).  
-- Acesso a relatórios analíticos sobre desempenho do negócio, incluindo lucros e serviços populares.  
-
-Um diferencial importante do sistema é a incorporação de inteligência artificial, que sugere datas de agendamento para clientes com base no histórico, além de segmentar os clientes em grupos de valor (baseado em RFM — Recência, Frequência e Valor Monetário), auxiliando em estratégias de marketing e fidelização.
+Uma aplicação web completa para gerenciamento de barbearias, desenvolvida com Flask e integrada com inteligência artificial para otimizar agendamentos e estratégias de negócio.
 
 ---
 
-## 2. Funcionalidades Principais
+## 📋 Visão Geral
 
-### Para Clientes
-- **Autenticação de Usuários:**  
-  Cadastro, login, logout e recuperação de senha via e-mail de forma segura.  
-- **Gerenciamento de Perfil:**  
-  Visualização e edição do nome de usuário, e-mail e foto de perfil.  
-- **Sistema de Agendamento:**  
-  Formulário intuitivo para agendar serviços, com seleção dinâmica de data, hora e serviço, validação de dados e prevenção de agendamentos duplicados.  
-- **Notificação por E-mail:**  
-  Envio automático de confirmação de agendamento para o e-mail do cliente.  
-- **Sugestão Inteligente:**  
-  Sistema que usa modelo de machine learning para sugerir a melhor data para o próximo agendamento do cliente, com base na frequência histórica.
+**APP_BARBEARIA** é uma plataforma web moderna e intuitiva, construída com o framework Flask em Python, destinada a revolucionar a gestão de barbearias. O sistema oferece uma experiência completa tanto para clientes quanto para administradores, combinando funcionalidades tradicionais de agendamento com recursos avançados de análise de dados e automação.
 
-### Para Administradores
-- **Controle de Acesso:**  
-  Rotas administrativas protegidas por permissão `admin`.  
-- **Visualização da Agenda:**  
-  - Agenda do Dia: visualização dos agendamentos no dia atual, com possibilidade de exclusão.  
-  - Consulta por Data: pesquisa de agendamentos por data específica.  
-- **Gerenciamento de Serviços (CRUD):**  
-  Interface para adicionar, editar e excluir serviços, atualizando nome e valor.  
-- **Relatórios e Dashboards:**  
-  Gráficos interativos que mostram:  
-  - Número de agendamentos por dia.  
-  - Tipos de serviço mais procurados (doughnut).  
-  - Lucro diário acumulado, com filtro de período.  
-- **Segmentação de Clientes (K-means):**  
-  Agrupamento dos clientes em segmentos "Alto Valor", "Intermediário" e "Novo Cliente" baseado na análise RFM para ajudar no direcionamento de ações de marketing.
+### 🎯 Objetivos Principais
+- **Para Clientes:** Facilitar o agendamento de serviços de forma rápida e personalizada, com lembretes automáticos e sugestões inteligentes baseadas no histórico de uso.
+- **Para Administradores:** Fornecer ferramentas poderosas de gestão, incluindo dashboards analíticos, controle de serviços e segmentação de clientes para estratégias de marketing direcionadas.
+- **Diferencial Inovador:** Integração de Machine Learning para previsões de agendamento e análise RFM (Recência, Frequência, Valor Monetário) com clustering K-means, transformando dados em insights acionáveis.
+
+O sistema inclui notificações automáticas via e-mail e WhatsApp, garantindo que nenhum agendamento seja esquecido, e utiliza um banco de dados SQLite robusto com migrações via Alembic para manter a integridade dos dados.
 
 ---
 
-## 3. Tecnologias Utilizadas
+## 🚀 Funcionalidades Principais
 
-- **Backend:**  
-  - Python  
-  - Flask  
-  - Flask-SQLAlchemy  
-  - Flask-Migrate & Alembic (migrações de banco)  
-  - Flask-Login  
-  - Flask-Bcrypt (hashing de senha)  
-  - Flask-Mail (envio de emails)  
-  - Flask-WTF (formularios e validação)  
+### 👤 Para Clientes
+- **Autenticação Segura:** Sistema completo de cadastro, login, logout e recuperação de senha com envio de e-mails seguros.
+- **Perfil Personalizado:** Gerenciamento de informações pessoais, incluindo upload e edição de foto de perfil.
+- **Agendamento Inteligente:**
+  - Formulário dinâmico com validação em tempo real.
+  - Prevenção de conflitos de horário.
+  - Sugestão automática da próxima data ideal usando RandomForestRegressor, baseado no padrão histórico de agendamentos do cliente.
+- **Notificações Automáticas:**
+  - Confirmação imediata por e-mail após agendamento.
+  - Lembretes via WhatsApp 24h, 2h, 1h e 30min antes do serviço, enviados automaticamente por um serviço em background.
+- **Histórico Completo:** Visualização de todos os agendamentos passados e futuros.
 
-- **Banco de Dados:**  
-  - SQLite (desenvolvimento)  
-  - SQLAlchemy (ORM)  
+### 👨‍💼 Para Administradores
+- **Controle de Acesso:** Rotas protegidas com decorator personalizado para permissões de admin.
+- **Gestão de Agenda:**
+  - Visualização da agenda diária com opção de exclusão de agendamentos.
+  - Consulta histórica por data específica.
+- **CRUD de Serviços:** Interface completa para adicionar, editar, excluir e gerenciar preços de serviços oferecidos.
+- **Dashboards Analíticos:**
+  - Gráficos interativos com Chart.js mostrando agendamentos por dia, serviços mais populares e lucros acumulados.
+  - Filtros de período para análise temporal.
+- **Segmentação de Clientes com IA:**
+  - Análise RFM automática para classificar clientes em "Alto Valor", "Intermediário" e "Novo Cliente".
+  - Algoritmo K-means para agrupamento inteligente, auxiliando em campanhas de marketing personalizadas.
+- **Ferramentas Administrativas:** Scripts para promoção de usuários a admin, reset de banco e verificação de senhas.
 
-- **Frontend:**  
-  - Jinja2 (templating Flask)  
-  - HTML5, CSS3, JavaScript  
-  - Bootstrap 5 (UI responsiva)  
-  - Chart.js (visualização gráfica dos relatórios)  
-
-- **Machine Learning:**  
-  - Pandas (manipulação de dados)  
-  - Scikit-learn (modelos RandomForestRegressor para previsão e KMeans para segmentação)  
-
-- **Outras:**  
-  - python-dotenv (variáveis de ambiente)  
-  - Pillow (manipulação de imagens)  
+### 🤖 Inteligência Artificial Integrada
+- **Modelo de Previsão:** RandomForestRegressor treinado com dados históricos para sugerir datas de agendamento otimizadas, reduzindo faltas e melhorando a satisfação do cliente.
+- **Segmentação RFM/K-means:** Análise estatística para identificar padrões de comportamento, permitindo estratégias de fidelização direcionadas.
 
 ---
 
-## 4. Estrutura do Projeto
+## 🛠️ Tecnologias Utilizadas
+
+- **Backend:**
+  - **Python 3.8+** - Linguagem principal
+  - **Flask** - Framework web leve e flexível
+  - **Flask-SQLAlchemy** - ORM para interação com banco de dados
+  - **Flask-Migrate & Alembic** - Sistema de migrações para versionamento do banco
+  - **Flask-Login** - Gerenciamento de sessões de usuário
+  - **Flask-Bcrypt** - Hashing seguro de senhas
+  - **Flask-Mail** - Envio de e-mails via SMTP
+  - **Flask-WTF** - Validação e geração de formulários
+
+- **Banco de Dados:**
+  - **SQLite** - Banco de dados relacional leve para desenvolvimento
+  - **SQLAlchemy** - ORM para consultas e manipulação de dados
+
+- **Frontend:**
+  - **Jinja2** - Engine de templates para renderização dinâmica
+  - **HTML5, CSS3, JavaScript** - Tecnologias web padrão
+  - **Bootstrap 5** - Framework CSS responsivo para UI moderna
+  - **Chart.js** - Biblioteca para gráficos interativos
+
+- **Machine Learning:**
+  - **Pandas** - Manipulação e análise de dados
+  - **Scikit-learn** - Algoritmos de ML (RandomForestRegressor e KMeans)
+
+- **Outras Bibliotecas:**
+  - **python-dotenv** - Carregamento de variáveis de ambiente
+  - **Pillow** - Processamento de imagens para uploads
+  - **PyWhatKit** - Automação de WhatsApp para lembretes
+  - **WTForms** - Validação avançada de formulários
+
+---
+
+## 📦 Instalação
+
+Para instruções detalhadas de instalação e configuração do ambiente local, consulte o arquivo [SETUP_LOCAL.md](SETUP_LOCAL.md).
+
+### Pré-requisitos Rápidos
+- Python 3.8 ou superior
+- Conta Gmail para notificações por e-mail
+- WhatsApp Web logado para lembretes
+
+---
+
+## 🎮 Uso / Demonstração
+
+### Executando a Aplicação
+Após a instalação, execute:
+```bash
+python app.py
+```
+Acesse `http://localhost:5000` no navegador.
+
+### Fluxo Básico
+1. **Cadastro/Login:** Novos usuários se cadastram; admins são promovidos via script.
+2. **Agendamento:** Cliente seleciona serviço, data e hora; recebe sugestão IA e confirmação por e-mail.
+3. **Lembretes:** Sistema envia notificações automáticas via WhatsApp em intervalos pré-definidos.
+4. **Administração:** Acesse `/admin` para visualizar agenda, gerenciar serviços e analisar relatórios.
+
+### Funcionalidades em Destaque
+- **Sugestão IA:** Após alguns agendamentos, o sistema sugere datas baseadas em padrões pessoais.
+- **Segmentação:** Admins visualizam clusters de clientes para campanhas direcionadas.
+- **Relatórios:** Dashboards com gráficos de lucros e popularidade de serviços.
+
+---
+
+## 📁 Estrutura do Projeto
 ```
 APP_BARBEARIA_PI/
 ├── App_Barbearia/               # Pacote principal da aplicação
@@ -107,14 +145,16 @@ APP_BARBEARIA_PI/
 ├── app.py                      # Arquivo principal para iniciar a aplicação
 ├── ler_db.py                   # Script para consulta rápida ao banco SQLite (debug)
 ├── set_admin.py                # Script CLI para promover usuários a admins
-└── requirements.txt            # Arquivo de dependências do projeto
+├── requirements.txt            # Arquivo de dependências do projeto
+├── SETUP_LOCAL.md              # Guia detalhado de instalação e execução
+└── readme.md                   # Este arquivo
 ```
 
 ---
 
-## 5. Banco de Dados
+## 🗄️ Banco de Dados
 
-O banco é composto pelas tabelas principais:
+O sistema utiliza SQLite com três tabelas principais:
 
 ### Tabela: `usuario`
 | Coluna      | Tipo       | Restrições                      | Descrição                        |
@@ -147,106 +187,30 @@ O banco é composto pelas tabelas principais:
 
 ---
 
-## 6. Configuração e Execução Local
+## 🤝 Contribuição
 
-### Pré-requisitos
-- Python 3.8 ou superior
-- Git (opcional para clonar o repositório)
+Contribuições são bem-vindas! Para contribuir:
 
-### Passo a Passo
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/nova-funcionalidade`)
+3. Commit suas mudanças (`git commit -am 'Adiciona nova funcionalidade'`)
+4. Push para a branch (`git push origin feature/nova-funcionalidade`)
+5. Abra um Pull Request
 
-1. Clone o repositório  
-
-```
-git clone <url-do-seu-repositorio>
-cd APP_BARBEARIA_PI
-```
-
-
-2. Crie e ative um ambiente virtual  
-**Windows**  
-
-```
-python -m venv venv
-.\venv\Scripts\activate
-```
-
-**macOS/Linux**  
-
-```
-python3 -m venv venv
-source venv/bin/activate
-```
-
-
-3. Instale as dependências  
-Crie um arquivo chamado `requirements.txt` (exemplo abaixo) e execute:  
-
-```
-pip install -r requirements.txt
-```
-
-
-Exemplo `requirements.txt`:  
-```
-flask>=2.0
-flask_sqlalchemy>=2.5
-flask_wtf>=1.0
-flask_login>=0.6
-flask_bcrypt>=1.0
-pywhatkit>=5.4
-flask_mail>=0.9
-wtforms>=3.0
-pillow>=10.0
-email_validator>=2.0
-
-```
-
-4. Configure variáveis de ambiente  
-Crie o arquivo `.env` na raiz e preencha:  
-
-```
-SECRET_KEY='sua-chave-secreta-aqui'
-MAIL_USERNAME='seu-email-do-gmail@gmail.com'
-MAIL_PASSWORD='sua-senha-de-app-do-gmail'
-```
-**Nota:** Para o `MAIL_PASSWORD`, gere uma senha de app na conta Google para o envio via SMTP.
-
-5. Configure o banco de dados  
-Com o ambiente virtual ativo, rode as migrações para criar as tabelas:  
-```
-flask db upgrade
-```
-
-6. Crie um usuário administrador  
-Primeiro, faça o registro de um novo usuário via interface web.  
-Depois rode o script CLI:  
-```
-python set_admin.py
-```
-Informe o e-mail do usuário para promover para administrador.
-
-7. Inicie a aplicação  
-```
-flask run --debug
-```
-A aplicação estará disponível em: [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+### Diretrizes
+- Siga os padrões de código Python (PEP 8)
+- Adicione testes para novas funcionalidades
+- Atualize a documentação conforme necessário
 
 ---
 
-## 7. Scripts Auxiliares
+## 📄 Licença
 
-- **set_admin.py**  
-Transforma um usuário existente em administrador pelo e-mail.
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-- **ler_db.py**  
-Script para conexão SQLite e listagem do conteúdo para debug.
+---
 
-- **instance/reset_banco.py**  
-Interface simples para resetar tabelas, remover registros ou atualizar campos específicos no banco.
-
-- **instance/reset_usuario.py**  
-Script para resetar a tabela `usuario` e inserir usuários padrão com senha definida.
+*Desenvolvido com ❤️ para barbearias modernas que querem crescer com tecnologia.*
 
 - **instance/verificar_senha.py**  
 Verifica se uma senha em texto plano confere com o hash bcrypt armazenado no banco para um usuário específico.

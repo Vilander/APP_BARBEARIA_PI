@@ -5,6 +5,7 @@
 - **Git** (opcional)
 - Acesso a uma conta **Gmail** (para notificações por e-mail)
 - Navegador web moderno
+- **WhatsApp Web** logado no navegador padrão (para lembretes via WhatsApp)
 
 ---
 
@@ -56,6 +57,8 @@ As dependências são:
 - **PyWhatKit** - Envio de mensagens WhatsApp (para lembretes)
 - **WTForms** - Validação de formulários
 - **Pillow** - Processamento de imagens
+- **Flask-Migrate** - Migrações de banco de dados
+- **python-dotenv** - Carregamento de variáveis de ambiente
 
 ---
 
@@ -76,6 +79,8 @@ MAIL_PASSWORD=sua-senha-de-app-do-gmail
 4. Copie a senha gerada (16 caracteres)
 5. Cole no `.env` como `MAIL_PASSWORD`
 
+**Nota:** Para os lembretes via WhatsApp funcionarem, certifique-se de que o WhatsApp Web está logado no navegador padrão do sistema.
+
 ---
 
 ## 🗄️ Passo 5: Configurar o Banco de Dados
@@ -87,9 +92,11 @@ $env:FLASK_APP='app.py'
 flask db upgrade
 ```
 
+Isso criará o banco de dados SQLite em `instance/barbearia.db` com todas as tabelas necessárias.
+
 ---
 
-## 👨‍💼 Passo 6: Criar Usuário Administrador
+## 👨‍💼 Passo 6: Criar Usuário Administrador (Opcional)
 
 ### Opção A: Via Script (Recomendado)
 ```powershell
@@ -97,6 +104,57 @@ python set_admin.py
 ```
 - Digite o e-mail do usuário para promover a admin
 - O usuário já deve estar cadastrado
+
+### Opção B: Manualmente no Banco
+Você pode usar o script `ler_db.py` para inspecionar o banco ou `instance/reset_usuario.py` para resetar usuários.
+
+---
+
+## ▶️ Passo 7: Executar a Aplicação
+
+Com tudo configurado, execute:
+
+```powershell
+python app.py
+```
+
+A aplicação será iniciada em `http://localhost:5000`.
+
+- O serviço de lembretes via WhatsApp será iniciado automaticamente em background.
+- Abra o navegador e acesse `http://localhost:5000` para usar a aplicação.
+
+---
+
+## 🧪 Passo 8: Testes (Opcional)
+
+Para executar os testes unitários:
+
+```powershell
+python -m pytest tests/
+```
+
+Ou para testes específicos:
+```powershell
+python -m pytest tests/test_auth.py
+```
+
+---
+
+## 🔧 Solução de Problemas
+
+- **Erro de permissão no Windows:** Execute `Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned` antes de ativar o venv.
+- **WhatsApp não envia lembretes:** Certifique-se de que o WhatsApp Web está logado e o navegador não está fechado.
+- **E-mails não chegam:** Verifique as credenciais do Gmail e a senha de app.
+- **Banco não cria tabelas:** Execute `flask db upgrade` novamente.
+- **Porta ocupada:** Se 5000 estiver ocupado, edite `app.py` para mudar a porta.
+
+---
+
+## 📚 Recursos Adicionais
+
+- [Documentação Flask](https://flask.palletsprojects.com/)
+- [PyWhatKit Docs](https://github.com/Ankit404butfound/PyWhatKit)
+- Leia o `readme.md` para mais detalhes sobre funcionalidades.
 
 ### Opção B: Acesso Direto ao Banco
 Se o script não funcionar, use o arquivo `instance/reset_usuario.py` ou `instance/reset_banco.py`

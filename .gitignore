@@ -127,3 +127,5 @@ cython_debug/
 # Ferramentas como Abstra, Streamlit etc.
 .abstra/
 .streamlit/secrets.toml
+
+.bat
